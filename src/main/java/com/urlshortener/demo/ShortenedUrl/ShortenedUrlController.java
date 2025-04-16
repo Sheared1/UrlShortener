@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,29 +51,35 @@ public class ShortenedUrlController {
     }
 
     @PutMapping("/api/urls")
-    public ResponseEntity<?> modifyShortenedUrl(@NotNull @RequestBody ShortenedUrlRequest request){
+    public ResponseEntity<?> updateShortenedUrl(@NotNull @RequestBody ShortenedUrlRequest request){
 
-        Optional<ShortenedUrl> shortenedUrl = shortenedUrlService.getShortenedUrlById(request.getId());
-
-        if (shortenedUrl.isPresent()){
-            return ResponseEntity.badRequest().body("Error: Could not find shortened URL for given request.");
+        if (!shortenedUrlService.isValidId(request.getId())){
+            return ResponseEntity.badRequest().body("Error: Invalid ID given");
         }
 
-        shortenedUrl = shortenedUrlService.updateShortenedUrl(request);
-
-        return ResponseEntity.status(HttpStatus.OK).body(shortenedUrl);
+        return ResponseEntity.status(HttpStatus.OK).body(shortenedUrlService.updateShortenedUrl(request));
     }
 
     @PutMapping("/api/urls/toggle/{id}")
     public ResponseEntity<?> toggleActiveShortenedUrl(@PathVariable Long id){
 
-        Optional<ShortenedUrl> shortenedUrl = shortenedUrlService.getShortenedUrlById(id);
-
-        if (shortenedUrl.isEmpty()){
-            return ResponseEntity.badRequest().body("Invalid ID given");
+        if (!shortenedUrlService.isValidId(id)){
+            return ResponseEntity.badRequest().body("Error: Invalid ID given");
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(shortenedUrlService.toggleActiveShortenedUrl(id));
+    }
+
+    @PutMapping("/api/urls/expiration/{id}")
+    public ResponseEntity<?> changeExpirationShortenedUrl(@PathVariable Long id, @RequestBody ShortenedUrlRequest request){
+        //Need to pass in LocalDateTime format (yyyy-MM-ddThh:mm:ss.SSS)
+
+        if (!shortenedUrlService.isValidId(id)){
+            return ResponseEntity.badRequest().body("Error: Invalid ID given");
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(shortenedUrlService.changeExpirationShortenedUrl(id, request.getExpirationDate()));
+
     }
 
 }

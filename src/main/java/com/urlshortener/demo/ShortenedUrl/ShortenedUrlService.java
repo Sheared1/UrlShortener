@@ -114,4 +114,18 @@ public class ShortenedUrlService {
         }
     }
 
+    public Object changeExpirationShortenedUrl(Long id, LocalDateTime expirationDate) {
+
+        return shortenedUrlRepository.findById(id).map(shortenedUrlInDb -> {
+            shortenedUrlInDb.setExpirationDate(expirationDate);
+            return shortenedUrlRepository.save(shortenedUrlInDb);
+        });
+
+    }
+
+    public boolean isValidId(Long id){
+        Optional<ShortenedUrl> shortenedUrl = getShortenedUrlById(id);
+        return shortenedUrl.isPresent();
+    }
+
 }
