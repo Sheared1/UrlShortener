@@ -28,6 +28,7 @@ public class ShortenedUrlService {
         return shortenedUrlRepository.findById(id);
     }
 
+    @Transactional
     public void deleteShortenedUrl(Long id){
         shortenedUrlRepository.deleteById(id);
     }
@@ -36,11 +37,11 @@ public class ShortenedUrlService {
         return shortenedUrlRepository.findByShortCode(code);
     }
 
-    @Transactional //all or nothing, DB transaction method
+    @Transactional //All or nothing, DB transaction method. Also, useful to see surface-level what methods modify entities in DB.
     public ShortenedUrl createShortenedUrl(String originalUrl, String customLink) {
 
         String code = createRandomCode();
-        while (shortenedUrlRepository.findByShortCode(code) != null){ //Crude way to handle collisions(?), just rerun the algorithm.
+        while (shortenedUrlRepository.findByShortCode(code) != null){ //(Crude?) way to handle collisions, just rerun the algorithm.
             code = createRandomCode();
         }
 
@@ -66,13 +67,14 @@ public class ShortenedUrlService {
 
     public boolean isValidCustomLink(String customLink) {
         ShortenedUrl shortenedUrl = shortenedUrlRepository.findByShortCode(customLink);
-        return shortenedUrl == null; //TODO: For now, just checking if custom link does not exist in DB to save it. Length over 8 will throw error, only 8 chars allowed in DB.
+        return shortenedUrl == null;
     }
 
     public String createRandomCode(){
         return RandomStringUtils.randomAlphanumeric(8); //creates alphanumeric 8 character String
     }
 
+    @Transactional
     public void increaseClickCount(ShortenedUrl shortenedUrl) {
         shortenedUrl.setClickCount(shortenedUrl.getClickCount() + 1);
         shortenedUrlRepository.save(shortenedUrl);
@@ -95,6 +97,7 @@ public class ShortenedUrlService {
 
     }
 
+    @Transactional
     public Optional<ShortenedUrl> toggleActiveShortenedUrl(Long id) {
         Optional<ShortenedUrl> shortenedUrl = shortenedUrlRepository.findById(id);
 
@@ -114,6 +117,7 @@ public class ShortenedUrlService {
         }
     }
 
+    @Transactional
     public Object changeExpirationShortenedUrl(Long id, LocalDateTime expirationDate) {
 
         return shortenedUrlRepository.findById(id).map(shortenedUrlInDb -> {
