@@ -36,7 +36,7 @@ public class ShortenedUrlController {
             return ResponseEntity.badRequest().body("Error: Invalid URL.");
         }
         if (!shortenedUrlService.isValidCustomLink(request.getCustomLink())){
-            return ResponseEntity.badRequest().body("Error: Custom code already exists.");
+            return ResponseEntity.badRequest().body("Error: Custom code invalid or already exists.");
         }
 
         ShortenedUrl shortenedUrl = shortenedUrlService.createShortenedUrl(request.getOriginalUrl(), request.getCustomLink()); //If custom link is null, one will be generated.

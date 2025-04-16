@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -67,7 +66,7 @@ public class ShortenedUrlService {
 
     public boolean isValidCustomLink(String customLink) {
         ShortenedUrl shortenedUrl = shortenedUrlRepository.findByShortCode(customLink);
-        return shortenedUrl == null;
+        return shortenedUrl == null && customLink != null && customLink.matches("^[a-zA-Z0-9_-]{1,8}$");
     }
 
     public String createRandomCode(){
@@ -75,7 +74,7 @@ public class ShortenedUrlService {
     }
 
     @Transactional
-    public void increaseClickCount(ShortenedUrl shortenedUrl) {
+    public void incrementClickCount(ShortenedUrl shortenedUrl) {
         shortenedUrl.setClickCount(shortenedUrl.getClickCount() + 1);
         shortenedUrlRepository.save(shortenedUrl);
     }
