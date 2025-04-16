@@ -45,9 +45,16 @@ public class ShortenedUrlController {
     }
 
     @DeleteMapping("/api/urls/{id}")
-    public void deleteShortenedUrl(@PathVariable Long id){
-        //TODO: change type to responseentity, validate id being given, if id is not valid then throw error.
+    public ResponseEntity<?> deleteShortenedUrl(@PathVariable Long id){
+
+        if (!shortenedUrlService.isValidId(id)){
+            return ResponseEntity.badRequest().body("Error: Invalid ID given");
+        }
+
         shortenedUrlService.deleteShortenedUrl(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body("Deleted successfully.");
+
     }
 
     @PutMapping("/api/urls")
