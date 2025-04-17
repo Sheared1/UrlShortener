@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/api/urls")
 public class ShortenedUrlController {
 
     @Autowired
@@ -19,24 +20,24 @@ public class ShortenedUrlController {
         this.shortenedUrlService = shortenedUrlService;
     }
 
-    @GetMapping("/api/urls")
+    @GetMapping
     public List<ShortenedUrl> getAllShortenedUrls(){
         return shortenedUrlService.getAllShortenedUrls();
     }
 
-    @GetMapping("/api/urls/{id}")
+    @GetMapping("/{id}")
     public Optional<ShortenedUrl> getShortenedUrl(@PathVariable Long id){
         return shortenedUrlService.getShortenedUrlById(id);
     }
 
-    @PostMapping("/api/generate")
+    @PostMapping("/generate")
     public ResponseEntity<?> createShortenedUrl(@NotNull @RequestBody ShortenedUrlRequest request){
 
         if (!shortenedUrlService.isValidUrl(request.getOriginalUrl())){
             return ResponseEntity.badRequest().body("Error: Invalid URL.");
         }
         if (!shortenedUrlService.isValidCustomLink(request.getCustomLink())){
-            return ResponseEntity.badRequest().body("Error: Custom code invalid or already exists.");
+            return ResponseEntity.badRequest().body("Error: Custom code invalid or already exists (code must exist, and be 1-8 alphanumeric characters).");
         }
 
         ShortenedUrl shortenedUrl = shortenedUrlService.createShortenedUrl(request.getOriginalUrl(), request.getCustomLink()); //If custom link is null, one will be generated.
@@ -44,7 +45,7 @@ public class ShortenedUrlController {
 
     }
 
-    @DeleteMapping("/api/urls/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteShortenedUrl(@PathVariable Long id){
 
         if (!shortenedUrlService.isValidId(id)){
@@ -57,7 +58,7 @@ public class ShortenedUrlController {
 
     }
 
-    @PutMapping("/api/urls")
+    @PutMapping
     public ResponseEntity<?> updateShortenedUrl(@NotNull @RequestBody ShortenedUrlRequest request){
 
         if (!shortenedUrlService.isValidId(request.getId())){
@@ -67,7 +68,7 @@ public class ShortenedUrlController {
         return ResponseEntity.status(HttpStatus.OK).body(shortenedUrlService.updateShortenedUrl(request));
     }
 
-    @PutMapping("/api/urls/toggle/{id}")
+    @PutMapping("/toggle/{id}")
     public ResponseEntity<?> toggleActiveShortenedUrl(@PathVariable Long id){
 
         if (!shortenedUrlService.isValidId(id)){
@@ -77,7 +78,7 @@ public class ShortenedUrlController {
         return ResponseEntity.status(HttpStatus.OK).body(shortenedUrlService.toggleActiveShortenedUrl(id));
     }
 
-    @PutMapping("/api/urls/expiration/{id}")
+    @PutMapping("/expiration/{id}")
     public ResponseEntity<?> changeExpirationShortenedUrl(@PathVariable Long id, @RequestBody ShortenedUrlRequest request){
         //Need to pass in LocalDateTime format (yyyy-MM-ddThh:mm:ss.SSS)
 

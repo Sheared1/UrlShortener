@@ -2,6 +2,7 @@ package com.urlshortener.demo.Redirect;
 
 import com.urlshortener.demo.ShortenedUrl.ShortenedUrl;
 import com.urlshortener.demo.ShortenedUrl.ShortenedUrlService;
+import com.urlshortener.demo.UrlClick.UrlClickService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,9 +16,12 @@ public class RedirectController {
 
     @Autowired
     private final ShortenedUrlService shortenedUrlService;
+    @Autowired
+    private final UrlClickService urlClickService;
 
-    public RedirectController(ShortenedUrlService shortenedUrlService) {
+    public RedirectController(ShortenedUrlService shortenedUrlService, UrlClickService urlClickService) {
         this.shortenedUrlService = shortenedUrlService;
+        this.urlClickService = urlClickService;
     }
 
     @GetMapping("/{code}")
@@ -31,6 +35,9 @@ public class RedirectController {
         }
 
         shortenedUrlService.incrementClickCount(shortenedUrl);
+
+        urlClickService.recordClick(shortenedUrl.getId(), request);
+
 
         return "redirect:" + shortenedUrl.getOriginalUrl();
     }

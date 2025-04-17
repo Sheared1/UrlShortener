@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "shortened_url")
 public class ShortenedUrl {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
