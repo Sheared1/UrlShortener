@@ -33,14 +33,14 @@ public class ShortenedUrlService {
     }
 
     public ShortenedUrl getOriginalUrlByShortCode(String code) {
-        return shortenedUrlRepository.findByShortCode(code);
+        return shortenedUrlRepository.getShortenedUrlByShortCode(code);
     }
 
     @Transactional //All or nothing, DB transaction method. Also, useful to see surface-level what methods modify entities in DB.
     public ShortenedUrl createShortenedUrl(String originalUrl, String customLink) {
 
         String code = createRandomCode();
-        while (shortenedUrlRepository.findByShortCode(code) != null){ //(Crude?) way to handle collisions, just rerun the algorithm.
+        while (shortenedUrlRepository.getShortenedUrlByShortCode(code) != null){ //(Crude?) way to handle collisions, just rerun the algorithm.
             code = createRandomCode();
         }
 
@@ -65,7 +65,7 @@ public class ShortenedUrlService {
     }
 
     public boolean isValidCustomLink(String customLink) {
-        ShortenedUrl shortenedUrl = shortenedUrlRepository.findByShortCode(customLink);
+        ShortenedUrl shortenedUrl = shortenedUrlRepository.getShortenedUrlByShortCode(customLink);
         return shortenedUrl == null && customLink != null && customLink.matches("^[a-zA-Z0-9_-]{1,8}$");
     }
 
@@ -131,4 +131,7 @@ public class ShortenedUrlService {
         return shortenedUrl.isPresent();
     }
 
+    public ShortenedUrl getShortenedUrlByShortCode(String code) {
+        return shortenedUrlRepository.getShortenedUrlByShortCode(code);
+    }
 }

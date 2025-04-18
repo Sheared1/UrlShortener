@@ -1,5 +1,6 @@
 package com.urlshortener.demo.Analytics;
 
+import com.urlshortener.demo.ShortenedUrl.ShortenedUrl;
 import com.urlshortener.demo.ShortenedUrl.ShortenedUrlService;
 import com.urlshortener.demo.UrlClick.UrlClick;
 import com.urlshortener.demo.UrlClick.UrlClickRepository;
@@ -43,6 +44,17 @@ public class AnalyticsController {
 
     }
 
-    //TODO: Make another get mapping for shortcode, and make it get use getAnalyticsById with the ID it retrieves from shortcode.
+    @GetMapping("/{code}")
+    public List<UrlClick> getAnalyticsByShortCode(@PathVariable String code){
+
+        ShortenedUrl shortenedUrl = shortenedUrlService.getShortenedUrlByShortCode(code);
+
+        if (shortenedUrl == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        return getAnalyticsById(shortenedUrl.getId());
+
+    }
 
 }
