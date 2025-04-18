@@ -2,11 +2,14 @@ package com.urlshortener.demo.ShortenedUrl;
 
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "shortened_url")
-public class ShortenedUrl {
+public class ShortenedUrl implements Serializable {
+
+    private static final long serialVersionUID = 1L;    //For Redis caching
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id

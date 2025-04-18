@@ -2,6 +2,8 @@ package com.urlshortener.demo.ShortenedUrl;
 
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -33,20 +35,23 @@ public class ShortenedUrlService {
         shortenedUrlRepository.deleteById(id);
     }
 
-    public ShortenedUrl getOriginalUrlByShortCode(String code) {
-        return shortenedUrlRepository.getShortenedUrlByShortCode(code);
+    @Cacheable(value = "urlCache", key = "#shortCode") //We are using @Cacheable since this is a READ operation. Will check cache before executing.
+    public ShortenedUrl getOriginalUrlByShortCode(String shortCode) {
+        return shortenedUrlRepository.getShortenedUrlByShortCode(shortCode);
     }
 
-    @Transactional //All or nothing, DB transaction method. Also, useful to see surface-level what methods modify entities in DB.
+    @Transactional
+    //We are using @CachePut since this is a WRITE operation. Will not check cache before executing.
+    @CachePut(value = "urlCache", key = "#result.shortCode") //We are caching the shortCode from the RESULT object (ShortenedUrl), which will be the custom link if used.
     public ShortenedUrl createShortenedUrl(String originalUrl, String customLink) {
 
-        String code = createRandomCode();
-        while (shortenedUrlRepository.getShortenedUrlByShortCode(code) != null){ //(Crude?) way to handle collisions, just rerun the algorithm.
-            code = createRandomCode();
+        String shortCode = createRandomCode();
+        while (shortenedUrlRepository.getShortenedUrlByShortCode(shortCode) != null){ //(Crude?) way to handle collisions, just rerun the algorithm.
+            shortCode = createRandomCode();
         }
 
         if (customLink != null){
-            code = customLink;
+            shortCode = customLink;
         }
 
         LocalDateTime expirationDate = LocalDateTime.now().plusDays(10); //Default expiration date is 10 days from creation date.
@@ -56,7 +61,7 @@ public class ShortenedUrlService {
         shortenedUrl.setExpirationDate(expirationDate);
         shortenedUrl.setCreatedAt(LocalDateTime.now());
         shortenedUrl.setActive(true);
-        shortenedUrl.setShortCode(code);
+        shortenedUrl.setShortCode(shortCode);
         shortenedUrl.setClickCount(0);
 
         shortenedUrlRepository.save(shortenedUrl);
@@ -137,7 +142,7 @@ public class ShortenedUrlService {
         return shortenedUrl.isPresent();
     }
 
-    public ShortenedUrl getShortenedUrlByShortCode(String code) {
-        return shortenedUrlRepository.getShortenedUrlByShortCode(code);
+    public ShortenedUrl getShortenedUrlByShortCode(String shortCode) {
+        return shortenedUrlRepository.getShortenedUrlByShortCode(shortCode);
     }
 }
