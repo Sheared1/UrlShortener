@@ -36,6 +36,9 @@ public class ShortenedUrlController {
         if (!shortenedUrlService.isValidUrl(request.getOriginalUrl())){
             return ResponseEntity.badRequest().body("Error: Invalid URL.");
         }
+        if (!shortenedUrlService.isValidLength(request.getOriginalUrl())){
+            return ResponseEntity.badRequest().body("Error: URL length greater than 2048 characters.");
+        }
         if (!shortenedUrlService.isValidCustomLink(request.getCustomLink())){
             return ResponseEntity.badRequest().body("Error: Custom code invalid or already exists (code must exist, and be 1-8 alphanumeric characters).");
         }

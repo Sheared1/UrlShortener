@@ -35,9 +35,9 @@ public class RedirectController {
             return "redirect:/404";
         }
 
-        shortenedUrlService.incrementClickCount(shortenedUrl);
+        shortenedUrlService.incrementClickCount(shortenedUrl); //Async
 
-        urlClickService.recordClick(shortenedUrl.getId(), request);
+        urlClickService.recordClick(shortenedUrl.getId(), request); //Async
 
 
         return "redirect:" + shortenedUrl.getOriginalUrl();

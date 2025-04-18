@@ -2,6 +2,7 @@ package com.urlshortener.demo.ShortenedUrl;
 
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
@@ -73,6 +74,7 @@ public class ShortenedUrlService {
         return RandomStringUtils.randomAlphanumeric(8); //creates alphanumeric 8 character String
     }
 
+    @Async
     @Transactional
     public void incrementClickCount(ShortenedUrl shortenedUrl) {
         shortenedUrl.setClickCount(shortenedUrl.getClickCount() + 1);
@@ -114,6 +116,10 @@ public class ShortenedUrlService {
         catch (Exception e){ //catches MalformedUrlException
             return false;
         }
+    }
+
+    public boolean isValidLength(String originalUrl){
+        return originalUrl.length() <= 2048;
     }
 
     @Transactional
