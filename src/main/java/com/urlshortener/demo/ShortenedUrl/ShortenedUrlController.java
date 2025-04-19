@@ -1,5 +1,8 @@
 package com.urlshortener.demo.ShortenedUrl;
 
+import com.urlshortener.demo.Redis.RedisRateLimitService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.Context;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,9 +18,12 @@ public class ShortenedUrlController {
 
     @Autowired
     private final ShortenedUrlService shortenedUrlService;
+    @Autowired
+    private final RedisRateLimitService redisRateLimitService;
 
-    public ShortenedUrlController(ShortenedUrlService shortenedUrlService) {
+    public ShortenedUrlController(ShortenedUrlService shortenedUrlService, RedisRateLimitService redisRateLimitService) {
         this.shortenedUrlService = shortenedUrlService;
+        this.redisRateLimitService = redisRateLimitService;
     }
 
     @GetMapping
@@ -31,15 +37,20 @@ public class ShortenedUrlController {
     }
 
     @PostMapping("/generate")
-    public ResponseEntity<?> createShortenedUrl(@NotNull @RequestBody ShortenedUrlRequest request){
+    public ResponseEntity<?> createShortenedUrl(@NotNull @RequestBody ShortenedUrlRequest request, HttpServletRequest httpRequest){
 
+        //Rate limiter implementation
+        String clientIp = shortenedUrlService.getClientIp(httpRequest);
+        if (!redisRateLimitService.allowRequest(clientIp)){
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Rate limit exceeded. Try again later.");
+        }
         if (!shortenedUrlService.isValidUrl(request.getOriginalUrl())){
             return ResponseEntity.badRequest().body("Error: Invalid URL.");
         }
         if (!shortenedUrlService.isValidLength(request.getOriginalUrl())){
             return ResponseEntity.badRequest().body("Error: URL length greater than 2048 characters.");
         }
-        if (!shortenedUrlService.isValidCustomLink(request.getCustomLink())){
+        if (!shortenedUrlService.isValidCustomLink(request.getCustomLink())) {
             return ResponseEntity.badRequest().body("Error: Custom code invalid or already exists (code must exist, and be 1-8 alphanumeric characters).");
         }
 
@@ -47,6 +58,8 @@ public class ShortenedUrlController {
         return ResponseEntity.status(HttpStatus.CREATED).body(shortenedUrl);
 
     }
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteShortenedUrl(@PathVariable Long id){

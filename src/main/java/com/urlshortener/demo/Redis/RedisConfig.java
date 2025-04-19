@@ -1,4 +1,4 @@
-package com.urlshortener.demo.Config;
+package com.urlshortener.demo.Redis;
 
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;

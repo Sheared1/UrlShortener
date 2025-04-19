@@ -1,5 +1,6 @@
 package com.urlshortener.demo.ShortenedUrl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.cache.annotation.CachePut;
@@ -144,5 +145,14 @@ public class ShortenedUrlService {
 
     public ShortenedUrl getShortenedUrlByShortCode(String shortCode) {
         return shortenedUrlRepository.getShortenedUrlByShortCode(shortCode);
+    }
+
+    //When application sits behind a proxy, getRemoteAddr() would give the proxy IP. Need this method to get actual client's IP.
+    public String getClientIp(HttpServletRequest httpRequest) {
+        String xForwardedFor = httpRequest.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()){
+            return xForwardedFor.split(",")[0].trim();
+        }
+        return httpRequest.getRemoteAddr();
     }
 }
