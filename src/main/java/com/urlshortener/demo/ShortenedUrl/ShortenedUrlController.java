@@ -2,7 +2,6 @@ package com.urlshortener.demo.ShortenedUrl;
 
 import com.urlshortener.demo.Redis.RedisRateLimitService;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.core.Context;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
