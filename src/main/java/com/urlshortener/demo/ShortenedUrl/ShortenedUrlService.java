@@ -72,6 +72,7 @@ public class ShortenedUrlService {
     }
 
     public boolean isValidCustomLink(String customLink) {
+        if (customLink == null) return true;
         ShortenedUrl shortenedUrl = shortenedUrlRepository.getShortenedUrlByShortCode(customLink);
         return shortenedUrl == null && customLink != null && customLink.matches("^[a-zA-Z0-9_-]{1,8}$");
     }

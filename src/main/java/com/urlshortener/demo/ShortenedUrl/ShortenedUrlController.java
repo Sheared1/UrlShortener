@@ -58,8 +58,6 @@ public class ShortenedUrlController {
 
     }
 
-
-
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteShortenedUrl(@PathVariable Long id){
 
