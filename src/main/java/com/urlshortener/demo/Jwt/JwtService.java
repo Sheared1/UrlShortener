@@ -27,7 +27,7 @@ public class JwtService {
         Claims claims = extractAllClaims(token);
         //Need special handling for Date type:
         if (claimType == Date.class){
-            return claimType.cast(new Date(Long.parseLong(claims.get(claimName).toString())));
+            return claimType.cast(claims.getExpiration());
         }
         return claimType.cast(claims.get(claimName));
     }
@@ -49,13 +49,18 @@ public class JwtService {
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 //Expiration date will be 1 day
-                .setExpiration(new Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
+                .setExpiration(new Date(System.currentTimeMillis() + 604800000))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public boolean isTokenExpired(String token){
-        return extractExpiration(token).before(new Date());
+        try {
+            Date expiration = extractExpiration(token);
+            return expiration.before(new Date());
+        } catch (Exception e) {
+            return true;
+        }
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails){

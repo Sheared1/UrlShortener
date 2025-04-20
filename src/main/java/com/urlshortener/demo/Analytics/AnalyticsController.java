@@ -33,7 +33,7 @@ public class AnalyticsController {
         this.urlClickRepository = urlClickRepository;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public List<UrlClick> getAnalyticsById(@PathVariable Long id){ //Gets url analytics from ShortenedUrl id.
 
         if (!shortenedUrlService.isValidId(id)){
@@ -46,7 +46,7 @@ public class AnalyticsController {
 
     }
 
-    @GetMapping("/{code}")
+    @GetMapping("/code/{code}")
     public List<UrlClick> getAnalyticsByShortCode(@PathVariable String code){
 
         ShortenedUrl shortenedUrl = shortenedUrlService.getShortenedUrlByShortCode(code);
