@@ -8,17 +8,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Controller
+@RequestMapping("/api/urls/redirect")
 public class RedirectController {
 
     @Autowired
     private final ShortenedUrlService shortenedUrlService;
     @Autowired
     private final UrlClickService urlClickService;
+
 
     public RedirectController(ShortenedUrlService shortenedUrlService, UrlClickService urlClickService) {
         this.shortenedUrlService = shortenedUrlService;

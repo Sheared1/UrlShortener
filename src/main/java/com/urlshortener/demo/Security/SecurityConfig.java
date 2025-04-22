@@ -36,8 +36,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())   //Commonly disabled for API endpoints
                 .authorizeHttpRequests(auth -> auth
                                 //Public endpoints here
-                                .requestMatchers("/api/shorten").permitAll()
-                                .requestMatchers("/api/redirect").permitAll()
+                                .requestMatchers("/api/urls/generate").permitAll()
+                                .requestMatchers("/api/urls/redirect/**").permitAll()
                                 .requestMatchers("/api/users/register").permitAll()
                                 .requestMatchers("/api/users/login").permitAll()
 
@@ -46,11 +46,11 @@ public class SecurityConfig {
                                 .requestMatchers("/api/users/delete").hasAuthority("ROLE_ADMIN")
 
                                 //Any request that doesn't match the above rules will require authentication (but no specific role)
-                                //anyRequest().authenticated()
+                                .anyRequest().authenticated()
                                 //Could be more restrictive if desired, and do:
                                 //.anyRequest().denyAll();
                                 //Or could be more permissive and do the opposite:
-                                .anyRequest().permitAll()
+                                //.anyRequest().permitAll()
                 )
                 //JWT implementation
                 .sessionManagement(session -> session
