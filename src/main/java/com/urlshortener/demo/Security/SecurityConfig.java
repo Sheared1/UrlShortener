@@ -38,10 +38,12 @@ public class SecurityConfig {
                                 //Public endpoints here
                                 .requestMatchers("/api/shorten").permitAll()
                                 .requestMatchers("/api/redirect").permitAll()
-                                .requestMatchers("/api/register").permitAll()
-                                .requestMatchers("/api/login").permitAll()
+                                .requestMatchers("/api/users/register").permitAll()
+                                .requestMatchers("/api/users/login").permitAll()
+
                                 //Secured enpoints here
                                 .requestMatchers("/api/analytics/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/api/users/delete").hasAuthority("ROLE_ADMIN")
 
                                 //Any request that doesn't match the above rules will require authentication (but no specific role)
                                 //anyRequest().authenticated()

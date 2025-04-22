@@ -3,10 +3,7 @@ package com.urlshortener.demo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
@@ -19,7 +16,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest user){
 
         if (userService.findByUsername(user.getUsername()) != null){
@@ -41,6 +38,19 @@ public class UserController {
         UserResponse userResponse = new UserResponse(registeredUser.getUsername(), registeredUser.getRoles());
 
         return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully.");
+
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id){
+
+        if (userService.findById(id) == null){
+            return ResponseEntity.badRequest().body("Error: User does not exist.");
+        }
+
+        userService.deleteUser(id);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted.");
 
     }
 

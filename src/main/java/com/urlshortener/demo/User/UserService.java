@@ -24,6 +24,9 @@ public class UserService {
     public User findByUsername(String username){
         return userRepository.findByUsername(username);
     }
+    public User findById(Long id){
+        return userRepository.findById(id).orElse(null);
+    }
 
     public User registerUser(String username, String password, String... roles){
 
@@ -38,4 +41,7 @@ public class UserService {
 
     }
 
+    public void deleteUser(Long id) {
+        userRepository.deleteById(id);
+    }
 }
