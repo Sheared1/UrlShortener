@@ -19,9 +19,9 @@ public class RedisRateLimitService {
     private final int MAX_REQUESTS = 10;
     private final int WINDOW_SECONDS = 3600;
 
-    public boolean allowRequest(String clientIp){
+    public boolean allowRequest(String clientIp, String endpoint){
 
-        String key = "rateLimit:" + clientIp;
+        String key = "rateLimit: " + endpoint + ": " + clientIp;
 
         Long currentCount = redisTemplate.opsForValue().increment(key, 1); //Incrementing the current count associated with client's IP.
 

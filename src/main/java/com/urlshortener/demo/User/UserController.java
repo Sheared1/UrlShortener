@@ -1,6 +1,10 @@
 package com.urlshortener.demo.User;
 
+import com.urlshortener.demo.Redis.RedisRateLimitService;
+import com.urlshortener.demo.ShortenedUrl.ShortenedUrlService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,14 +15,24 @@ public class UserController {
 
     @Autowired
     private final UserService userService;
+    @Autowired
+    private final RedisRateLimitService redisRateLimitService;
+    @Autowired
+    private final ShortenedUrlService shortenedUrlService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, RedisRateLimitService redisRateLimitService, ShortenedUrlService shortenedUrlService) {
         this.userService = userService;
+        this.redisRateLimitService = redisRateLimitService;
+        this.shortenedUrlService = shortenedUrlService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest user){
+    public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest user, HttpServletRequest httpRequest){
 
+        String clientIp = shortenedUrlService.getClientIp(httpRequest);
+        if (!redisRateLimitService.allowRequest(clientIp, "REGISTER")){ //Rate limiting implementation, pass in endpoint name.
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Rate limit exceeded. Try again later.");
+        }
         if (userService.findByUsername(user.getUsername()) != null){
             return ResponseEntity.badRequest().body("Error: Username already exists.");
         }

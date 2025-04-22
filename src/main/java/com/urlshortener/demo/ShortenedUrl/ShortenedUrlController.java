@@ -40,7 +40,7 @@ public class ShortenedUrlController {
 
         //Rate limiter implementation
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
-        if (!redisRateLimitService.allowRequest(clientIp)){
+        if (!redisRateLimitService.allowRequest(clientIp, "GENERATE")){ //Rate limiting implementation, pass in endpoint name.
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Rate limit exceeded. Try again later.");
         }
         if (!shortenedUrlService.isValidUrl(request.getOriginalUrl())){
