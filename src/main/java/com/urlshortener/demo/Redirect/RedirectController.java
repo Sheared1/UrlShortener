@@ -4,17 +4,18 @@ import com.urlshortener.demo.ShortenedUrl.ShortenedUrl;
 import com.urlshortener.demo.ShortenedUrl.ShortenedUrlService;
 import com.urlshortener.demo.UrlClick.UrlClickService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/api/urls/redirect")
 public class RedirectController {
 
     @Autowired
@@ -22,13 +23,12 @@ public class RedirectController {
     @Autowired
     private final UrlClickService urlClickService;
 
-
     public RedirectController(ShortenedUrlService shortenedUrlService, UrlClickService urlClickService) {
         this.shortenedUrlService = shortenedUrlService;
         this.urlClickService = urlClickService;
     }
 
-    @GetMapping("/{code}")
+    @GetMapping("/r/{code}")
     public String redirect(@PathVariable String code, HttpServletRequest request){
 
         ShortenedUrl shortenedUrl = shortenedUrlService.getOriginalUrlByShortCode(code);

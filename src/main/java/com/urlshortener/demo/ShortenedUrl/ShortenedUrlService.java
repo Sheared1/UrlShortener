@@ -36,7 +36,7 @@ public class ShortenedUrlService {
         shortenedUrlRepository.deleteById(id);
     }
 
-    @Cacheable(value = "urlCache", key = "#shortCode") //We are using @Cacheable since this is a READ operation. Will check cache before executing.
+    @Cacheable(value = "urlCache", unless = "#result == null", key = "#shortCode") //We are using @Cacheable since this is a READ operation. Will check cache before executing.
     public ShortenedUrl getOriginalUrlByShortCode(String shortCode) {
         return shortenedUrlRepository.getShortenedUrlByShortCode(shortCode);
     }
@@ -47,7 +47,7 @@ public class ShortenedUrlService {
     public ShortenedUrl createShortenedUrl(String originalUrl, String customLink) {
 
         String shortCode = createRandomCode();
-        while (shortenedUrlRepository.getShortenedUrlByShortCode(shortCode) != null){ //(Crude?) way to handle collisions, just rerun the algorithm.
+        while (shortenedUrlRepository.getShortenedUrlByShortCode(shortCode) != null){ //(Crude?) way to handle collisions, rerun the algorithm.
             shortCode = createRandomCode();
         }
 

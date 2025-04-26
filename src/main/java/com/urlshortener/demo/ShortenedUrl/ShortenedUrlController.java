@@ -25,7 +25,7 @@ public class ShortenedUrlController {
         this.redisRateLimitService = redisRateLimitService;
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public List<ShortenedUrl> getAllShortenedUrls(){
         return shortenedUrlService.getAllShortenedUrls();
     }

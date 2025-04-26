@@ -36,10 +36,24 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())   //Commonly disabled for API endpoints
                 .authorizeHttpRequests(auth -> auth
                                 //Public endpoints here
+                                .requestMatchers("/").permitAll()                      // Allow access to root path
+                                .requestMatchers("/r/**").permitAll()
+                                .requestMatchers("/index.html").permitAll()           // Allow access to index.html
+                                .requestMatchers("/static/**").permitAll()
+                                .requestMatchers("/*.js").permitAll()               // Allow JavaScript files
+                                .requestMatchers("/*.css").permitAll()              // Allow CSS files
+                                .requestMatchers("/favicon.ico").permitAll()        // Allow favicon
+                                .requestMatchers("/error").permitAll()  // Spring Boot's default error handling
+                                .requestMatchers("/404").permitAll()    // Your custom 404 page
+
+
+
+
                                 .requestMatchers("/api/urls/generate").permitAll()
                                 .requestMatchers("/api/urls/redirect/**").permitAll()
                                 .requestMatchers("/api/users/register").permitAll()
                                 .requestMatchers("/api/users/login").permitAll()
+
 
                                 //Secured enpoints here
                                 .requestMatchers("/api/analytics/**").hasAuthority("ROLE_ADMIN")
