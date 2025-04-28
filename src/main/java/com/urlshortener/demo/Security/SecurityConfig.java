@@ -39,6 +39,8 @@ public class SecurityConfig {
                                 .requestMatchers("/").permitAll()                      // Allow access to root path
                                 .requestMatchers("/r/**").permitAll()
                                 .requestMatchers("/index.html").permitAll()           // Allow access to index.html
+                                .requestMatchers("/register.html").permitAll()
+                                .requestMatchers("/login.html").permitAll()
                                 .requestMatchers("/static/**").permitAll()
                                 .requestMatchers("/*.js").permitAll()               // Allow JavaScript files
                                 .requestMatchers("/*.css").permitAll()              // Allow CSS files
@@ -52,7 +54,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/urls/generate").permitAll()
                                 .requestMatchers("/api/urls/redirect/**").permitAll()
                                 .requestMatchers("/api/users/register").permitAll()
-                                .requestMatchers("/api/users/login").permitAll()
+                                .requestMatchers("/api/auth/login").permitAll()
 
 
                                 //Secured enpoints here

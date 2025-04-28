@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="auth.js"></script>
+  <script src="common.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - URL Shortener</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        text-align: center;
+    }
+    .navbar {
+        background-color: #333;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+    }
+    .navbar a {
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        border-radius: 4px;
+    }
+    .navbar a:hover {
+        background-color: #555;
+    }
+    .container {
+        background-color: #f5f5f5;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    input[type="email"], input[type="password"], input[type="text"] {
+        width: 80%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+    button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    .error {
+        color: #f44336;
+        margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Register</h1>
+  <form id="registerForm" onsubmit="return handleRegister(event)">
+    <div class="form-group">
+      <input type="text" id="username" placeholder="Username" required>
+    </div>
+    <div class="form-group">
+      <input type="password" id="password" placeholder="Password" required>
+    </div>
+    <div class="form-group">
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+    </div>
+    <button type="submit">Register</button>
+  </form>
+  <p id="errorMessage" class="error"></p>
+</div>
+
+<script>
+  async function handleRegister(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const errorElement = document.getElementById('errorMessage');
+
+      if (password !== confirmPassword) {
+          errorElement.textContent = 'Passwords do not match';
+          return false;
+      }
+
+      try {
+          const response = await fetch('/api/users/register', {   //For secured endpoints, we will use "await makeAuthenticatedRequest ..." from auth.js script
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ username, password })
+          });
+
+          if (!response.ok) {
+              const data = await response.json();
+              errorElement.textContent = data.message || 'Registration failed';
+              return false;
+          }
+
+          window.location.href = 'login.html';
+      } catch (error) {
+          errorElement.textContent = 'Error: Failed to register';
+      }
+      return false;
+  }
+</script>
+</body>
+</html>
