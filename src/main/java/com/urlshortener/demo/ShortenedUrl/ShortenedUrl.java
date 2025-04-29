@@ -33,6 +33,17 @@ public class ShortenedUrl implements Serializable {
     @Column
     private boolean active;
 
+    @Column
+    private String createdBy;
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
     public long getId() {
         return id;
     }

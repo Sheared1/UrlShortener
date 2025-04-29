@@ -1,5 +1,6 @@
 package com.urlshortener.demo.ShortenedUrl;
 
+import com.urlshortener.demo.Jwt.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -18,9 +19,11 @@ import java.util.Optional;
 public class ShortenedUrlService {
 
     private final ShortenedUrlRepository shortenedUrlRepository;
+    private final JwtService jwtService;
 
-    public ShortenedUrlService(ShortenedUrlRepository shortenedUrlRepository) {
+    public ShortenedUrlService(ShortenedUrlRepository shortenedUrlRepository, JwtService jwtService) {
         this.shortenedUrlRepository = shortenedUrlRepository;
+        this.jwtService = jwtService;
     }
 
     public List<ShortenedUrl> getAllShortenedUrls(){
@@ -44,7 +47,14 @@ public class ShortenedUrlService {
     @Transactional
     //We are using @CachePut since this is a WRITE operation. Will not check cache before executing.
     @CachePut(value = "urlCache", key = "#result.shortCode") //We are caching the shortCode from the RESULT object (ShortenedUrl), which will be the custom link if used.
-    public ShortenedUrl createShortenedUrl(String originalUrl, String customLink) {
+    public ShortenedUrl createShortenedUrl(String originalUrl, String customLink, String authHeader) {
+
+        //The below gets username from JWT if user is logged in. Otherwise, it will be null.
+        String username = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            username = jwtService.extractUsername(token);
+        }
 
         String shortCode = createRandomCode();
         while (shortenedUrlRepository.getShortenedUrlByShortCode(shortCode) != null){ //(Crude?) way to handle collisions, rerun the algorithm.
@@ -64,6 +74,7 @@ public class ShortenedUrlService {
         shortenedUrl.setActive(true);
         shortenedUrl.setShortCode(shortCode);
         shortenedUrl.setClickCount(0);
+        shortenedUrl.setCreatedBy(username);
 
         shortenedUrlRepository.save(shortenedUrl);
 

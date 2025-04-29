@@ -36,7 +36,7 @@ public class ShortenedUrlController {
     }
 
     @PostMapping("/generate")
-    public ResponseEntity<?> createShortenedUrl(@NotNull @RequestBody ShortenedUrlRequest request, HttpServletRequest httpRequest){
+    public ResponseEntity<?> createShortenedUrl(@NotNull @RequestBody ShortenedUrlRequest request, HttpServletRequest httpRequest, @RequestHeader(value = "Authorization", required = false) String authHeader){
 
         //Rate limiter implementation
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
@@ -53,7 +53,7 @@ public class ShortenedUrlController {
             return ResponseEntity.badRequest().body("Error: Custom code invalid or already exists (code must exist, and be 1-8 alphanumeric characters).");
         }
 
-        ShortenedUrl shortenedUrl = shortenedUrlService.createShortenedUrl(request.getOriginalUrl(), request.getCustomLink()); //If custom link is null, one will be generated.
+        ShortenedUrl shortenedUrl = shortenedUrlService.createShortenedUrl(request.getOriginalUrl(), request.getCustomLink(), authHeader); //If custom link is null, one will be generated.
         return ResponseEntity.status(HttpStatus.CREATED).body(shortenedUrl);
 
     }
