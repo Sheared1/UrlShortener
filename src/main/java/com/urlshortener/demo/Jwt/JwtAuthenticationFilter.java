@@ -81,11 +81,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.equals("/error") ||
                 path.equals("/404") ||
                 path.equals("/index.html") ||
-                path.startsWith("/static/") ||
+                path.equals("/register.html") ||
+                path.equals("/login.html") ||
                 path.equals("/api/urls/generate") ||
                 path.startsWith("/api/urls/redirect/") ||
                 path.equals("/api/users/register") ||
-                path.equals("/api/users/login");
+                path.equals("/api/auth/login");
     }
 
 }

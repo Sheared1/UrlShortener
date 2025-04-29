@@ -1,4 +1,4 @@
-// Function to inject CSS styles
+//Function to inject CSS styles
 function addNavbarStyles() {
     const styleElement = document.createElement('style');
     styleElement.textContent = `
@@ -42,6 +42,9 @@ function createNavbar() {
             <a href="login.html">Login</a>
             <a href="register.html">Register</a>
         </span>
+        <span id="myUrlsLink">
+            <a href="myurls-loader.html">My Urls</a>
+        </span>
         <a href="#" onclick="logout()" id="logoutLink">Logout</a>
     `;
 
@@ -53,13 +56,16 @@ function updateNavbar() {
     const token = localStorage.getItem('jwtToken');
     const authLinks = document.getElementById('authLinks');
     const logoutLink = document.getElementById('logoutLink');
+    const myUrlsLink = document.getElementById('myUrlsLink');
 
     if (token) {
         authLinks.style.display = 'none';
         logoutLink.style.display = 'inline';
+        myUrlsLink.style.display = 'inline';
     } else {
         authLinks.style.display = 'inline';
         logoutLink.style.display = 'none';
+        myUrlsLink.style.display = 'none';
     }
 }
 
@@ -68,9 +74,9 @@ function logout() {
     window.location.href = '/login.html';
 }
 
-// Wait for the DOM to be fully loaded before creating and updating the navbar
+//Wait for the DOM to be fully loaded before creating and updating the navbar
 document.addEventListener('DOMContentLoaded', () => {
-    addNavbarStyles();  // Add this line to inject the styles
+    addNavbarStyles();  //Injecting styles
     createNavbar();
     updateNavbar();
 });

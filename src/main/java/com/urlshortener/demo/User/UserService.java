@@ -35,7 +35,12 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(password));
         user.setActive(true);
         user.setCreatedAt(LocalDateTime.now());
-        user.setRoles(new HashSet<>(Arrays.asList(roles)));
+        if (roles == null || roles.length == 0){
+            user.setRoles(new HashSet<>(Arrays.asList("USER"))); //Setting USER role by default.
+        }
+        else {
+            user.setRoles(new HashSet<>(Arrays.asList(roles)));
+        }
 
         return userRepository.save(user);
 

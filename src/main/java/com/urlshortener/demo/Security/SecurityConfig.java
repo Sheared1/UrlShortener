@@ -46,7 +46,10 @@ public class SecurityConfig {
                                 .requestMatchers("/*.css").permitAll()              // Allow CSS files
                                 .requestMatchers("/favicon.ico").permitAll()        // Allow favicon
                                 .requestMatchers("/error").permitAll()  // Spring Boot's default error handling
-                                .requestMatchers("/404").permitAll()    // Your custom 404 page
+                                .requestMatchers("/404").permitAll()    // For custom 404 page if needed
+                                .requestMatchers("/myurls-loader.html").permitAll()
+
+
 
 
 
@@ -57,9 +60,12 @@ public class SecurityConfig {
                                 .requestMatchers("/api/auth/login").permitAll()
 
 
-                                //Secured enpoints here
+
+                                //Secured endpoints here
                                 .requestMatchers("/api/analytics/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/api/users/delete").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/myurls.html").hasAuthority("ROLE_USER")
+                                .requestMatchers("/api/urls/user/**").hasAuthority("ROLE_USER")
 
                                 //Any request that doesn't match the above rules will require authentication (but no specific role)
                                 .anyRequest().authenticated()
