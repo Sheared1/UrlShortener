@@ -1,7 +1,9 @@
 package com.urlshortener.demo.ShortenedUrl;
 
+import com.urlshortener.demo.Jwt.JwtService;
 import com.urlshortener.demo.Redis.RedisRateLimitService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.coyote.Response;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,15 +21,36 @@ public class ShortenedUrlController {
     private final ShortenedUrlService shortenedUrlService;
     @Autowired
     private final RedisRateLimitService redisRateLimitService;
+    @Autowired
+    private final JwtService jwtService;
 
-    public ShortenedUrlController(ShortenedUrlService shortenedUrlService, RedisRateLimitService redisRateLimitService) {
+    public ShortenedUrlController(ShortenedUrlService shortenedUrlService, RedisRateLimitService redisRateLimitService, JwtService jwtService) {
         this.shortenedUrlService = shortenedUrlService;
         this.redisRateLimitService = redisRateLimitService;
+        this.jwtService = jwtService;
     }
 
     @GetMapping("/all")
     public List<ShortenedUrl> getAllShortenedUrls(){
         return shortenedUrlService.getAllShortenedUrls();
+    }
+
+    @GetMapping("/user/{username}")
+    public ResponseEntity<?> getShortenedUrlsForUser(@PathVariable String username, @RequestHeader("Authorization") String authHeader){
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            String authenticatedUsername = jwtService.extractUsername(token);
+
+            if (!username.equals(authenticatedUsername)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only access your own URLs.");
+            }
+
+            return ResponseEntity.ok(shortenedUrlService.getShortenedUrlsForUser(username));
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No bearer token found");
+
+
     }
 
     @GetMapping("/{id}")

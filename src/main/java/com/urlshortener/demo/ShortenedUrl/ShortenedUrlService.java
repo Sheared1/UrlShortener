@@ -167,4 +167,8 @@ public class ShortenedUrlService {
         }
         return httpRequest.getRemoteAddr();
     }
+
+    public List<ShortenedUrl> getShortenedUrlsForUser(String username) {
+        return shortenedUrlRepository.findByCreatedBy(username);
+    }
 }
