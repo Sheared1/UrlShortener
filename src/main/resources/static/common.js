@@ -2,10 +2,22 @@
 function addNavbarStyles() {
     const styleElement = document.createElement('style');
     styleElement.textContent = `
+
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;  /* Simplified margin */
+            padding: 0;      /* Remove padding */
+            text-align: center;
+        }
         .navbar {
+            width: 800px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
             background-color: #333;
             padding: 15px;
-            margin-bottom: 20px;
+            margin: 40px 0 20px;
             border-radius: 8px;
             text-align: center;
         }

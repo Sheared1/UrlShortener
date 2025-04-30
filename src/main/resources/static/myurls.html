@@ -7,6 +7,47 @@
   <script src="common.js"></script>
   <script src="auth.js"></script>
   <style>
+
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0;
+        text-align: center;
+    }
+
+    .navbar {
+        width: 800px;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #333;
+        padding: 15px;
+        margin: 40px 0 20px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .navbar a {
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        border-radius: 4px;
+    }
+
+    .navbar a:hover {
+        background-color: #555;
+    }
+
+    #authLinks {
+        display: inline;
+    }
+
+    #logoutLink {
+        display: none;
+    }
+
     .url-table {
         width: 100%;
         border-collapse: collapse;
