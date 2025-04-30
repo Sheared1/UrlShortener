@@ -137,6 +137,14 @@
                 })
             });
 
+            //Handle rate limiting error first by checking response text
+            if (response.status === 429) {
+                const errorText = await response.text();
+                errorElement.textContent = 'Too many requests. Please try again later.';
+                return;
+            }
+
+            //Handle other errors by parsing the response JSON
             const data = await response.json();
 
             if (!response.ok) {
