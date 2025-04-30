@@ -85,11 +85,31 @@
     <div id="result">
         <h3>Your shortened URL:</h3>
         <p class="shortened-url" id="shortenedUrl"></p>
+        <button id="copyButton" onclick="copyToClipboard()" style="padding: 8px 16px;">Copy</button>
     </div>
     <p id="errorMessage" class="error"></p>
 </div>
 
 <script>
+    async function copyToClipboard() {
+        const shortenedUrl = document.getElementById('shortenedUrl').textContent;
+        try {
+            await navigator.clipboard.writeText(shortenedUrl);
+            const copyButton = document.getElementById('copyButton');
+            const originalText = copyButton.textContent;
+            copyButton.textContent = 'Copied!';
+            copyButton.style.backgroundColor = '#2196F3'; // Change color to indicate success
+
+            // Reset button text after 2 seconds
+            setTimeout(() => {
+                copyButton.textContent = originalText;
+                copyButton.style.backgroundColor = '#4CAF50';
+            }, 2000);
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+        }
+    }
+
     async function shortenUrl() {
         const originalUrl = document.getElementById('originalUrl').value;
         const customLink = document.getElementById('customLink').value;
