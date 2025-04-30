@@ -48,6 +48,32 @@
         display: none;
     }
 
+    .url-cell {
+        max-width: 300px;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 12px;
+    }
+
+    /* For WebKit browsers (Chrome, Safari) */
+    .url-cell::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .url-cell::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .url-cell::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    .url-cell::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+
     .url-table {
         width: 100%;
         border-collapse: collapse;
@@ -104,6 +130,32 @@
         background-color: #4CAF50;
         color: white;
     }
+
+    .pagination {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .pagination-btn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 8px 16px;
+        margin: 0 5px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .pagination-btn:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+
+    #pageInfo {
+        margin: 0 10px;
+        font-size: 16px;
+    }
+
   </style>
 </head>
 <body>
@@ -125,10 +177,42 @@
       <tbody id="urlsTableBody">
       </tbody>
     </table>
+    <div id="pagination">
+      <button id="prevPage" disabled>Previous</button>
+      <span id="pageInfo"></span>
+      <button id="nextPage" disabled>Next</button>
+    </div>
   </div>
 </div>
 
 <script>
+
+  let currentPage = 1;
+  const itemsPerPage = 10;
+  let allUrls = [];
+
+  function updatePagination() {
+      const totalPages = Math.ceil(allUrls.length / itemsPerPage);
+      const prevButton = document.getElementById('prevPage');
+      const nextButton = document.getElementById('nextPage');
+      const pageInfo = document.getElementById('pageInfo');
+
+      if (!prevButton || !nextButton || !pageInfo) {
+          console.error('Pagination elements not found');
+          return;
+      }
+
+      prevButton.disabled = currentPage === 1;
+      nextButton.disabled = currentPage === totalPages;
+
+      pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+      // Hide pagination if there's only one page
+      document.getElementById('pagination').style.display =
+          totalPages <= 1 ? 'none' : 'block';
+  }
+
+
   async function loadUserUrls() {
 
     const token = localStorage.getItem('jwtToken');
@@ -138,47 +222,81 @@
     }
 
     try {
-        // Extract username from JWT token
         const payload = token.split('.')[1];
         const decodedPayload = JSON.parse(atob(payload));
         const username = decodedPayload.sub;
 
-        const response = await makeAuthenticatedRequest(`/api/urls/user/${username}`, {
-            method: 'GET'
+        // Add logging to debug the request
+        console.log('Making request for username:', username);
+
+        const response = await fetch(`/api/urls/user/${username}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
 
         if (response.status === 401 || response.status === 403) {
-            // Handle unauthorized access
+            console.error('Authentication error:', response.status);
             localStorage.removeItem('jwtToken');
             window.location.href = 'login.html';
             return;
         }
 
         if (!response.ok) {
-            throw new Error('Failed to fetch URLs');
+            const errorText = await response.text();
+            console.error('Server error:', response.status, errorText);
+            throw new Error(`Failed to fetch URLs: ${errorText}`);
         }
 
-        const urls = await response.json();
-        displayUrls(urls);
+        const data = await response.json();
+        console.log('Received data:', data);
+
+        // Ensure we have an array
+        allUrls = Array.isArray(data) ? data : [];
+
+        if (allUrls.length > 0) {
+            updatePagination();
+            displayUrls();
+        } else {
+            const tableBody = document.getElementById('urlsTableBody');
+            tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No URLs found</td></tr>';
+            document.getElementById('pagination').style.display = 'none';
+        }
     } catch (error) {
-        console.error('Error:', error);
-        alert('Failed to load URLs');
+        console.error('Error in loadUserUrls:', error);
+        const tableBody = document.getElementById('urlsTableBody');
+        tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Error: ${error.message}</td></tr>`;
+        document.getElementById('pagination').style.display = 'none';
     }
+
   }
 
 
-  function displayUrls(urls) {
+  function displayUrls() {
       const tableBody = document.getElementById('urlsTableBody');
       tableBody.innerHTML = '';
 
-      urls.forEach(url => {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const urlsToDisplay = allUrls.slice(startIndex, endIndex);
+
+      if (!Array.isArray(urlsToDisplay)) {
+          console.error('URLs data is not an array:', urlsToDisplay);
+          return;
+      }
+
+      urlsToDisplay.forEach(url => {
+          if (!url) return; // Skip if url object is undefined
+
           const row = document.createElement('tr');
           row.innerHTML = `
-              <td>${url.shortCode}</td>
-              <td><a href="${url.originalUrl}" target="_blank">${url.originalUrl}</a></td>
-              <td>${new Date(url.createdAt).toLocaleDateString()}</td>
-              <td>${new Date(url.expirationDate).toLocaleDateString()}</td>
-              <td>${url.clickCount}</td>
+              <td>${url.shortCode || ''}</td>
+              <td class="url-cell"><a href="${url.originalUrl || '#'}" target="_blank">${url.originalUrl || ''}</a></td>
+              <td>${url.createdAt ? new Date(url.createdAt).toLocaleDateString() : ''}</td>
+              <td>${url.expirationDate ? new Date(url.expirationDate).toLocaleDateString() : ''}</td>
+              <td>${url.clickCount || 0}</td>
               <td class="${url.active ? 'status-active' : 'status-inactive'}">
                   ${url.active ? 'Active' : 'Inactive'}
               </td>
@@ -194,6 +312,53 @@
           tableBody.appendChild(row);
       });
   }
+
+  // Add event listeners for pagination
+  document.addEventListener('DOMContentLoaded', () => {
+      loadUserUrls();
+
+      // Add click handlers for pagination buttons
+      document.getElementById('prevPage')?.addEventListener('click', () => {
+          if (currentPage > 1) {
+              currentPage--;
+              displayUrls();
+              updatePagination();
+          }
+      });
+
+      document.getElementById('nextPage')?.addEventListener('click', () => {
+          const totalPages = Math.ceil(allUrls.length / itemsPerPage);
+          if (currentPage < totalPages) {
+              currentPage++;
+              displayUrls();
+              updatePagination();
+          }
+      });
+  });
+  // Add event listeners for pagination
+  document.addEventListener('DOMContentLoaded', () => {
+      loadUserUrls();
+
+      // Add click handlers for pagination buttons
+      document.getElementById('prevPage')?.addEventListener('click', () => {
+          if (currentPage > 1) {
+              currentPage--;
+              displayUrls();
+              updatePagination();
+          }
+      });
+
+      document.getElementById('nextPage')?.addEventListener('click', () => {
+          const totalPages = Math.ceil(allUrls.length / itemsPerPage);
+          if (currentPage < totalPages) {
+              currentPage++;
+              displayUrls();
+              updatePagination();
+          }
+      });
+  });
+
+
 
   async function toggleUrlStatus(id) {
       try {
