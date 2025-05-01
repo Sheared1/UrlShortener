@@ -1,5 +1,8 @@
 package com.urlshortener.demo.User;
 
+import com.urlshortener.demo.Email.EmailService;
+import com.urlshortener.demo.Email.EmailVerificationToken;
+import com.urlshortener.demo.Email.EmailVerificationTokenService;
 import com.urlshortener.demo.Redis.RedisRateLimitService;
 import com.urlshortener.demo.ShortenedUrl.ShortenedUrlService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,6 +11,8 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/users")
@@ -19,15 +24,23 @@ public class UserController {
     private final RedisRateLimitService redisRateLimitService;
     @Autowired
     private final ShortenedUrlService shortenedUrlService;
+    @Autowired
+    private final EmailVerificationTokenService emailVerificationTokenService;
+    @Autowired
+    private final EmailService emailService;
 
-    public UserController(UserService userService, RedisRateLimitService redisRateLimitService, ShortenedUrlService shortenedUrlService) {
+    public UserController(UserService userService, RedisRateLimitService redisRateLimitService, ShortenedUrlService shortenedUrlService, EmailVerificationTokenService emailVerificationTokenService, EmailService emailService) {
         this.userService = userService;
         this.redisRateLimitService = redisRateLimitService;
         this.shortenedUrlService = shortenedUrlService;
+        this.emailVerificationTokenService = emailVerificationTokenService;
+        this.emailService = emailService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest user, HttpServletRequest httpRequest){
+
+        System.out.println("Received registration request for username: " + user.getUsername());
 
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
         if (!redisRateLimitService.allowRequest(clientIp, "REGISTER")){ //Rate limiting implementation, pass in endpoint name.
@@ -46,12 +59,24 @@ public class UserController {
             return ResponseEntity.badRequest().body("Error: Password must contain at least one special character.");
         }
 
-        User registeredUser = userService.registerUser(user.getUsername(), user.getPassword(), "USER");
+        if (userService.findByEmail(user.getEmail()) != null){
+            return ResponseEntity.badRequest().body("Error: Email already exists.");
+        }
+
+        //TODO: add email input validation
+
+        System.out.println("Creating new user: " + user.getUsername());
+        User registeredUser = userService.registerUser(user.getUsername(), user.getPassword(), user.getEmail(), "USER");
+        System.out.println("User created successfully");
+
+
+        String verificationToken = emailVerificationTokenService.createVerificationTokenForUser(registeredUser);
+        emailService.sendVerificationEmail(user.getEmail(), verificationToken);
 
         //Not returning User object because we do not want to expose sensitive information.
         UserResponse userResponse = new UserResponse(registeredUser.getUsername(), registeredUser.getRoles());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully. Please check your email to verify your account.");
 
     }
 

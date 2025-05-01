@@ -8,9 +8,12 @@ public class UserRegistrationRequest {
 
     private String password;
 
-    public UserRegistrationRequest(String username, String password) {
+    private String email;
+
+    public UserRegistrationRequest(String username, String password, String email) {
         this.username = username;
         this.password = password;
+        this.email = email;
     }
 
     public String getPassword() {
@@ -29,6 +32,12 @@ public class UserRegistrationRequest {
         this.username = username;
     }
 
+    public String getEmail() {
+        return email;
+    }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
 }

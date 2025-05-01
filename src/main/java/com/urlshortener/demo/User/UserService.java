@@ -28,11 +28,13 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
-    public User registerUser(String username, String password, String... roles){
+    public User registerUser(String username, String password, String email, String... roles){
 
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
+        user.setEmail(email);
+        user.setEmailVerified(false);
         user.setActive(true);
         user.setCreatedAt(LocalDateTime.now());
         if (roles == null || roles.length == 0){
@@ -49,4 +51,14 @@ public class UserService {
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
+
+    public void setEmailVerified(User user, boolean verified) {
+        user.setEmailVerified(verified);
+        userRepository.save(user);
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
 }

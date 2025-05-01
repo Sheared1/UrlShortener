@@ -24,7 +24,7 @@
         margin-bottom: 15px;
     }
     input[type="email"], input[type="password"], input[type="text"] {
-        width: 80%;
+        width: 50%;
         padding: 12px;
         margin: 10px 0;
         border: 1px solid #ddd;
@@ -55,6 +55,9 @@
   <h1>Register</h1>
   <form id="registerForm" onsubmit="return handleRegister(event)">
     <div class="form-group">
+      <input type="email" id="email" placeholder="Email" required>
+    </div>
+    <div class="form-group">
       <input type="text" id="username" placeholder="Username" required>
     </div>
     <div class="form-group">
@@ -71,10 +74,20 @@
 <script>
   async function handleRegister(event) {
       event.preventDefault();
+      const email = document.getElementById('email').value;
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirmPassword').value;
       const errorElement = document.getElementById('errorMessage');
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+          messageDiv.innerHTML = 'Please enter a valid email address';
+          messageDiv.className = 'error';
+          return;
+      }
+
 
       if (password !== confirmPassword) {
           errorElement.textContent = 'Passwords do not match';
@@ -87,8 +100,16 @@
               headers: {
                   'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ username, password })
+              body: JSON.stringify({
+                username: username,
+                password: password,
+                email: email
+              })
           });
+
+          if (response.status === 429) {
+              alert("Too many registration attempts. Please wait a moment before trying again.");
+          }
 
           if (!response.ok) {
               const data = await response.json();
@@ -96,6 +117,8 @@
               return false;
           }
 
+          alert("User registered successfully. Please check your email to verify your account.");
+          document.getElementById('registerForm').reset();
           window.location.href = 'login.html';
       } catch (error) {
           errorElement.textContent = 'Error: Failed to register';

@@ -42,6 +42,8 @@ public class SecurityConfig {
                                 .requestMatchers("/register.html").permitAll()
                                 .requestMatchers("/login.html").permitAll()
                                 .requestMatchers("/static/**").permitAll()
+                                .requestMatchers("/*.js").permitAll()
+                                .requestMatchers("/*.css").permitAll()
                                 .requestMatchers("/*.js").permitAll()               // Allow JavaScript files
                                 .requestMatchers("/*.css").permitAll()              // Allow CSS files
                                 .requestMatchers("/favicon.ico").permitAll()        // Allow favicon
@@ -58,6 +60,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/urls/redirect/**").permitAll()
                                 .requestMatchers("/api/users/register").permitAll()
                                 .requestMatchers("/api/auth/login").permitAll()
+                                .requestMatchers("/api/email/verify-email/**").permitAll()
 
 
 

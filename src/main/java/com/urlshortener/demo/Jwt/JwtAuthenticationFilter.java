@@ -33,12 +33,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             final String authHeader = request.getHeader("Authorization");
+            final String requestPath = request.getServletPath();
 
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                System.out.println("No Bearer token found");
+                if (!shouldNotFilter(request)) {
+                    System.out.println("No Bearer token found for protected endpoint: " + requestPath);
+                } else {
+                    System.out.println("Public endpoint accessed: " + requestPath);
+                }
                 filterChain.doFilter(request, response);
                 return;
             }
+
 
             final String jwt = authHeader.substring(7);
             final String username = jwtService.extractUsername(jwt);
@@ -83,6 +89,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.equals("/index.html") ||
                 path.equals("/register.html") ||
                 path.equals("/login.html") ||
+                path.startsWith("/static/") ||
+                path.endsWith(".js") ||
+                path.endsWith(".css") ||
                 path.equals("/api/urls/generate") ||
                 path.startsWith("/api/urls/redirect/") ||
                 path.equals("/api/users/register") ||
