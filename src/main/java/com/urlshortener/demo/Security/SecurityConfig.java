@@ -41,6 +41,9 @@ public class SecurityConfig {
                                 .requestMatchers("/index.html").permitAll()           // Allow access to index.html
                                 .requestMatchers("/register.html").permitAll()
                                 .requestMatchers("/login.html").permitAll()
+                                .requestMatchers("/forgot-password.html").permitAll()
+                                .requestMatchers("/myurls-loader.html").permitAll()
+                                .requestMatchers("reset-password.html").permitAll()
                                 .requestMatchers("/static/**").permitAll()
                                 .requestMatchers("/*.js").permitAll()
                                 .requestMatchers("/*.css").permitAll()
@@ -49,7 +52,7 @@ public class SecurityConfig {
                                 .requestMatchers("/favicon.ico").permitAll()        // Allow favicon
                                 .requestMatchers("/error").permitAll()  // Spring Boot's default error handling
                                 .requestMatchers("/404").permitAll()    // For custom 404 page if needed
-                                .requestMatchers("/myurls-loader.html").permitAll()
+
 
 
 
@@ -61,6 +64,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/users/register").permitAll()
                                 .requestMatchers("/api/auth/login").permitAll()
                                 .requestMatchers("/api/email/verify-email/**").permitAll()
+                                .requestMatchers("/api/users/forgot-password/**").permitAll()
+                                .requestMatchers("/api/password/reset-password/**").permitAll()
 
 
 

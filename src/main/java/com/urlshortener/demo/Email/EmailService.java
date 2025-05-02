@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,6 +16,10 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
+    @Value("${app.url}")
+    private String appUrl;
+
+    @Async
     public void sendVerificationEmail(String to, String token) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
@@ -25,4 +30,21 @@ public class EmailService {
 
         mailSender.send(message);
     }
+
+    @Async
+    public void sendPasswordResetEmail(String to, String token) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(fromEmail);
+        message.setTo(to);
+        message.setSubject("Password Reset Request");
+        message.setText("Hello,\n\n" +
+                "You have requested to reset your password. Please click the link below to set a new password:\n\n" +
+                appUrl + "/reset-password.html?token=" + token + "\n\n" +
+                "If you did not request this password reset, please ignore this email.\n\n" +
+                "This link will expire in 15 minutes.\n\n"
+        );
+
+        mailSender.send(message);
+    }
+
 }

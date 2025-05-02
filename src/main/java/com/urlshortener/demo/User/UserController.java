@@ -1,18 +1,17 @@
 package com.urlshortener.demo.User;
 
 import com.urlshortener.demo.Email.EmailService;
-import com.urlshortener.demo.Email.EmailVerificationToken;
 import com.urlshortener.demo.Email.EmailVerificationTokenService;
+import com.urlshortener.demo.Password.PasswordResetService;
 import com.urlshortener.demo.Redis.RedisRateLimitService;
 import com.urlshortener.demo.ShortenedUrl.ShortenedUrlService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,14 +27,39 @@ public class UserController {
     private final EmailVerificationTokenService emailVerificationTokenService;
     @Autowired
     private final EmailService emailService;
+    @Autowired
+    private final PasswordResetService passwordResetService;
 
-    public UserController(UserService userService, RedisRateLimitService redisRateLimitService, ShortenedUrlService shortenedUrlService, EmailVerificationTokenService emailVerificationTokenService, EmailService emailService) {
+    public UserController(UserService userService, RedisRateLimitService redisRateLimitService, ShortenedUrlService shortenedUrlService, EmailVerificationTokenService emailVerificationTokenService, EmailService emailService, PasswordResetService passwordResetService) {
         this.userService = userService;
         this.redisRateLimitService = redisRateLimitService;
         this.shortenedUrlService = shortenedUrlService;
         this.emailVerificationTokenService = emailVerificationTokenService;
         this.emailService = emailService;
+        this.passwordResetService = passwordResetService;
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> sendPasswordResetLink(@RequestBody Map<String, String> request){
+
+        String email = request.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Email is required");
+        }
+
+        User user = userService.findByEmail(email);
+
+        //Always return success even if email does not exist, it is a security best practice.
+        if (user != null){
+            passwordResetService.createPasswordResetToken(user);
+            emailService.sendPasswordResetEmail(email, passwordResetService.findByUser(user).getToken());
+        }
+
+        return ResponseEntity.ok("If an account exists with the given email, a password reset link has been sent to the email address.");
+
+    }
+
+
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest user, HttpServletRequest httpRequest){

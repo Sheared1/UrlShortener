@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/email")
-public class EmailVerificationTokenController {
+public class EmailVerificationController {
 
     @Autowired
     private final UserService userService;
@@ -20,7 +20,7 @@ public class EmailVerificationTokenController {
     @Autowired
     private final EmailVerificationTokenService emailVerificationTokenService;
 
-    public EmailVerificationTokenController(UserService userService, EmailVerificationTokenService emailVerificationTokenService) {
+    public EmailVerificationController(UserService userService, EmailVerificationTokenService emailVerificationTokenService) {
         this.userService = userService;
         this.emailVerificationTokenService = emailVerificationTokenService;
     }
