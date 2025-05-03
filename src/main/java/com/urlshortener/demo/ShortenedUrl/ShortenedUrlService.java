@@ -7,6 +7,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.net.URL;
@@ -49,12 +52,11 @@ public class ShortenedUrlService {
     @CachePut(value = "urlCache", key = "#result.shortCode") //We are caching the shortCode from the RESULT object (ShortenedUrl), which will be the custom link if used.
     public ShortenedUrl createShortenedUrl(String originalUrl, String customLink, String authHeader) {
 
-        //The below gets username from JWT if user is logged in. Otherwise, it will be null.
-        String username = null;
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            username = jwtService.extractUsername(token);
-        }
+        //Get username from SecurityContext if authenticated, otherwise null
+        String username = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .filter(auth -> !(auth instanceof AnonymousAuthenticationToken))
+                .map(Authentication::getName)
+                .orElse(null);
 
         String shortCode = createRandomCode();
         while (shortenedUrlRepository.getShortenedUrlByShortCode(shortCode) != null){ //(Crude?) way to handle collisions, rerun the algorithm.
