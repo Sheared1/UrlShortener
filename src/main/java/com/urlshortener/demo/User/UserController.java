@@ -2,6 +2,7 @@ package com.urlshortener.demo.User;
 
 import com.urlshortener.demo.Email.EmailService;
 import com.urlshortener.demo.Email.EmailVerificationTokenService;
+import com.urlshortener.demo.Jwt.JwtService;
 import com.urlshortener.demo.Password.PasswordResetService;
 import com.urlshortener.demo.Redis.RedisRateLimitService;
 import com.urlshortener.demo.ShortenedUrl.ShortenedUrlService;
@@ -29,14 +30,34 @@ public class UserController {
     private final EmailService emailService;
     @Autowired
     private final PasswordResetService passwordResetService;
+    @Autowired
+    private final JwtService jwtService;
 
-    public UserController(UserService userService, RedisRateLimitService redisRateLimitService, ShortenedUrlService shortenedUrlService, EmailVerificationTokenService emailVerificationTokenService, EmailService emailService, PasswordResetService passwordResetService) {
+    public UserController(UserService userService, RedisRateLimitService redisRateLimitService, ShortenedUrlService shortenedUrlService, EmailVerificationTokenService emailVerificationTokenService, EmailService emailService, PasswordResetService passwordResetService, JwtService jwtService) {
         this.userService = userService;
         this.redisRateLimitService = redisRateLimitService;
         this.shortenedUrlService = shortenedUrlService;
         this.emailVerificationTokenService = emailVerificationTokenService;
         this.emailService = emailService;
         this.passwordResetService = passwordResetService;
+        this.jwtService = jwtService;
+    }
+
+    @GetMapping("/email-verification-status")
+    public ResponseEntity<?> getEmailVerificationStatus(@RequestHeader("Authorization") String authHeader){
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body("No bearer token found");
+        }
+
+        String token = authHeader.substring(7); //Removes "Bearer " prefix
+        String username = jwtService.extractUsername(token);
+        User user = userService.findByUsername(username);
+
+        Map<String, Boolean> response = Map.of("emailVerified", user.isEmailVerified());
+
+        return ResponseEntity.ok(response);
+
     }
 
     @PostMapping("/forgot-password")
