@@ -119,7 +119,7 @@ function createVerificationBanner() {
     banner.innerHTML = `
         <span>Please verify your email</span>
         <button class="resend-button" onclick="resendVerificationEmail()">Resend verification email</button>
-        <span id="emailSentMessage" style="display: none; margin-left: 10px; color: #28a745;">Email has been sent.</span>
+        <span id="emailSentMessage" style="display: none; margin-top: 10px; color: #28a745;">Email has been sent.</span>
     `;
 
     // Insert after navbar
@@ -177,7 +177,7 @@ async function resendVerificationEmail() {
         if (response.status === 429) {
             messageElement.style.color = '#dc3545'; // Red color for error
             messageElement.textContent = 'Rate limit exceeded. Try again later.';
-            messageElement.style.display = 'inline';
+            messageElement.style.display = 'block';
 
             setTimeout(() => {
                 messageElement.style.display = 'none';
@@ -190,7 +190,7 @@ async function resendVerificationEmail() {
         else if (response.status === 400) {
             messageElement.style.color = '#dc3545'; // Red color for error
             messageElement.textContent = 'Email is already verified. Please refresh the page.';
-            messageElement.style.display = 'inline';
+            messageElement.style.display = 'block';
 
             setTimeout(() => {
                 messageElement.style.display = 'none';
@@ -201,7 +201,7 @@ async function resendVerificationEmail() {
         }
 
         else if (response.ok) {
-            messageElement.style.display = 'inline';
+            messageElement.style.display = 'block';
 
             // Hide the message after 3 seconds
             setTimeout(() => {
