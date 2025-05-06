@@ -40,11 +40,16 @@ public class UserController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> sendPasswordResetLink(@RequestBody Map<String, String> request){
+    public ResponseEntity<?> sendPasswordResetLink(@RequestBody Map<String, String> request, HttpServletRequest httpRequest){
 
         String email = request.get("email");
         if (email == null || email.trim().isEmpty()) {
             return ResponseEntity.badRequest().body("Email is required");
+        }
+
+        if (!redisRateLimitService.allowRequest(httpRequest.getRemoteAddr(), "RESET_PASSWORD")) {
+            return ResponseEntity.status(429)
+                    .body(Map.of("message", "Rate limit exceeded. Try again later."));
         }
 
         User user = userService.findByEmail(email);

@@ -1,7 +1,9 @@
 package com.urlshortener.demo.Password;
 
+import com.urlshortener.demo.Redis.RedisRateLimitService;
 import com.urlshortener.demo.User.User;
 import com.urlshortener.demo.User.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,10 +24,14 @@ public class PasswordResetController {
     @Autowired
     private final UserService userService;
 
-    public PasswordResetController(PasswordResetService passwordResetService, PasswordEncoder passwordEncoder, UserService userService) {
+    @Autowired
+    private final RedisRateLimitService redisRateLimitService;
+
+    public PasswordResetController(PasswordResetService passwordResetService, PasswordEncoder passwordEncoder, UserService userService, RedisRateLimitService redisRateLimitService) {
         this.passwordResetService = passwordResetService;
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
+        this.redisRateLimitService = redisRateLimitService;
     }
 
     @PostMapping("/reset-password")
@@ -70,6 +76,7 @@ public class PasswordResetController {
     //This mapping VALIDATES the token
     @GetMapping("/reset-password")
     public ResponseEntity<?> validateToken(@RequestParam String token) {
+
         PasswordResetToken resetToken = passwordResetService.findByToken(token);
 
         if (resetToken == null || resetToken.isExpired() || resetToken.isUsed()) {
