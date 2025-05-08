@@ -47,7 +47,7 @@ public class UserController {
     public ResponseEntity<?> getEmailVerificationStatus(@RequestHeader("Authorization") String authHeader){
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.badRequest().body("No bearer token found");
+            return ResponseEntity.badRequest().body(Map.of("message", "No bearer token found"));
         }
 
         String token = authHeader.substring(7); //Removes "Bearer " prefix
@@ -65,7 +65,7 @@ public class UserController {
 
         String email = request.get("email");
         if (email == null || email.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Email is required");
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
         }
 
         if (!redisRateLimitService.allowRequest(httpRequest.getRemoteAddr(), "RESET_PASSWORD")) {
@@ -97,23 +97,23 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Rate limit exceeded. Try again later.");
         }
         if (userService.findByUsername(user.getUsername()) != null){
-            return ResponseEntity.badRequest().body("Error: Username already exists.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Username already exists."));
         }
         if (user.getPassword().length() < 8){
             return ResponseEntity.badRequest().body("Error: Password must be at least 8 characters long.");
         }
         if (!user.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")){
-            return ResponseEntity.badRequest().body("Error: Password must contain at least one uppercase letter, one lowercase letter, and one number.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Password must contain at least one uppercase letter, one lowercase letter, and one number."));
         }
         if (!user.getPassword().matches("^(?=.*[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).+$")){
-            return ResponseEntity.badRequest().body("Error: Password must contain at least one special character.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Password must contain at least one special character."));
         }
 
         if (userService.findByEmail(user.getEmail()) != null){
-            return ResponseEntity.badRequest().body("Error: Email already exists.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Email already exists."));
         }
 
-        //TODO: add email input validation
+
 
         System.out.println("Creating new user: " + user.getUsername());
         User registeredUser = userService.registerUser(user.getUsername(), user.getPassword(), user.getEmail(), "USER");
@@ -134,12 +134,12 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable Long id){
 
         if (userService.findById(id) == null){
-            return ResponseEntity.badRequest().body("Error: User does not exist.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: User does not exist."));
         }
 
         userService.deleteUser(id);
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("User deleted.");
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(Map.of("message", "User deleted."));
 
     }
 

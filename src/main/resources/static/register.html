@@ -109,6 +109,7 @@
 
           if (response.status === 429) {
               alert("Too many registration attempts. Please wait a moment before trying again.");
+              return false;
           }
 
           if (!response.ok) {
