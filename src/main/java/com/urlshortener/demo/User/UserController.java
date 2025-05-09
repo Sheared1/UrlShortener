@@ -72,6 +72,29 @@ public class UserController {
 
     }
 
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateUserProfile(@RequestBody UserProfileDTO userProfileDTO, @RequestHeader("Authorization") String authHeader){
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        User user = userService.findByUsername(username);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+        }
+
+        user.setFirstName(userProfileDTO.getFirstName());
+        user.setLastName(userProfileDTO.getLastName());
+        user.setBio(userProfileDTO.getBio());
+        user.setLocation(userProfileDTO.getLocation());
+        user.setDateOfBirth(userProfileDTO.getDateOfBirth());
+
+        userService.saveUser(user);
+
+        return ResponseEntity.ok(userProfileDTO);
+
+    }
+
     @GetMapping("/email-verification-status")
     public ResponseEntity<?> getEmailVerificationStatus(@RequestHeader("Authorization") String authHeader){
 
