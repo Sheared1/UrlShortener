@@ -43,6 +43,35 @@ public class UserController {
         this.jwtService = jwtService;
     }
 
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile(@RequestHeader("Authorization") String authHeader){
+
+        String token = authHeader.substring(7);
+        String username = jwtService.extractUsername(token);
+        User user = userService.findByUsername(username);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+        }
+
+        UserProfileDTO userProfileDTO = new UserProfileDTO(
+                user.getUsername(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getBio(),
+                user.getDateOfBirth(),
+                user.getLocation(),
+                user.getCreatedAt(),
+                user.getLastLoginAt(),
+                user.getRoles(),
+                user.isEmailVerified()
+        );
+
+        return ResponseEntity.ok(userProfileDTO);
+
+    }
+
     @GetMapping("/email-verification-status")
     public ResponseEntity<?> getEmailVerificationStatus(@RequestHeader("Authorization") String authHeader){
 
@@ -113,8 +142,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Email already exists."));
         }
 
-
-
         System.out.println("Creating new user: " + user.getUsername());
         User registeredUser = userService.registerUser(user.getUsername(), user.getPassword(), user.getEmail(), "USER");
         System.out.println("User created successfully");
@@ -126,7 +153,7 @@ public class UserController {
         //Not returning User object because we do not want to expose sensitive information.
         UserResponse userResponse = new UserResponse(registeredUser.getUsername(), registeredUser.getRoles());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully. Please check your email to verify your account.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
 
     }
 
