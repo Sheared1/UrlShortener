@@ -67,6 +67,15 @@ function addNavbarStyles() {
         #logoutLink {
             display: none;
         }
+
+        #profileLinkNav {
+            display: none;
+        }
+
+        #myUrlsLink {
+            display: none;
+        }
+
     `;
     document.head.appendChild(styleElement);
 }
@@ -83,6 +92,7 @@ function createNavbar() {
         <span id="myUrlsLink">
             <a href="myurls-loader.html">My Urls</a>
         </span>
+        <a href="#" id="profileLinkNav">Profile</a>
         <a href="#" onclick="logout()" id="logoutLink">Logout</a>
     `;
 
@@ -100,10 +110,12 @@ function updateNavbar() {
         authLinks.style.display = 'none';
         logoutLink.style.display = 'inline';
         myUrlsLink.style.display = 'inline';
+        if (profileLinkNav) profileLinkNav.style.display = 'inline';
     } else {
         authLinks.style.display = 'inline';
         logoutLink.style.display = 'none';
         myUrlsLink.style.display = 'none';
+        if (profileLinkNav) profileLinkNav.style.display = 'none';
     }
 }
 
@@ -213,6 +225,46 @@ async function resendVerificationEmail() {
     }
 }
 
+function handleProfileLinkClick(event) {
+    event.preventDefault();
+    const token = localStorage.getItem('jwtToken');
+
+    if (!token) {
+        alert('You need to be logged in to access your profile.');
+        window.location.href = '/login.html';
+        return;
+    }
+
+    fetch('/api/users/profile', {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            // Try to get more specific error from response body if available
+            return response.json().then(err => {
+                 throw new Error(err.message || 'Failed to check email verification status. Status: ' + response.status);
+            }).catch(() => { // Fallback if response body is not JSON or empty
+                 throw new Error('Failed to check email verification status. Status: ' + response.status);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.emailVerified) {
+            window.location.href = 'profile.html'; // Redirect to profile page
+        } else {
+            alert('Please verify your email before accessing your profile.');
+        }
+    })
+    .catch(error => {
+        console.error('Error checking email verification for profile access:', error);
+        alert('An error occurred while checking your email verification status: ' + error.message);
+    });
+}
+
+
 
 //Wait for the DOM to be fully loaded before creating and updating the navbar
 document.addEventListener('DOMContentLoaded', () => {
@@ -220,4 +272,11 @@ document.addEventListener('DOMContentLoaded', () => {
     createNavbar();
     updateNavbar();
     checkEmailVerificationStatus();
+
+    const profileLinkElement = document.getElementById('profileLinkNav');
+    if (profileLinkElement) {
+        profileLinkElement.addEventListener('click', handleProfileLinkClick);
+    } else {
+        console.warn('Profile link element (profileLinkNav) not found.');
+    }
 });

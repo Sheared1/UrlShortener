@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 .requestMatchers("/login.html").permitAll()
                                 .requestMatchers("/forgot-password.html").permitAll()
                                 .requestMatchers("/myurls-loader.html").permitAll()
-                                .requestMatchers("reset-password.html").permitAll()
+                                .requestMatchers("/reset-password.html").permitAll()
+                                .requestMatchers("/profile.html").permitAll()
                                 .requestMatchers("/static/**").permitAll()
                                 .requestMatchers("/*.js").permitAll()
                                 .requestMatchers("/*.css").permitAll()
@@ -75,7 +76,7 @@ public class SecurityConfig {
                                 .requestMatchers("/myurls.html").hasAuthority("ROLE_USER")
                                 .requestMatchers("/api/urls/user/**").hasAuthority("ROLE_USER")
 
-                                //Any request that doesn't match the above rules will require authentication (but no specific role)
+                                //Any request that doesn't match the above rules will require authentication (but no specific role):
                                 .anyRequest().authenticated()
                                 //Could be more restrictive if desired, and do:
                                 //.anyRequest().denyAll();

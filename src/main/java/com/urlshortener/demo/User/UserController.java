@@ -72,7 +72,7 @@ public class UserController {
 
     }
 
-    @PutMapping("/profile")
+    @PutMapping("/update-profile")
     public ResponseEntity<?> updateUserProfile(@RequestBody UserProfileDTO userProfileDTO, @RequestHeader("Authorization") String authHeader){
 
         String token = authHeader.substring(7);
@@ -90,6 +90,17 @@ public class UserController {
         user.setDateOfBirth(userProfileDTO.getDateOfBirth());
 
         userService.saveUser(user);
+
+        userProfileDTO.setUsername(user.getUsername());
+        userProfileDTO.setFirstName(user.getFirstName());
+        userProfileDTO.setLastName(user.getLastName());
+        userProfileDTO.setBio(user.getBio());
+        userProfileDTO.setLocation(user.getLocation());
+        userProfileDTO.setDateOfBirth(user.getDateOfBirth());
+        userProfileDTO.setEmail(user.getEmail());
+        userProfileDTO.setEmailVerified(user.isEmailVerified());
+        userProfileDTO.setCreatedAt(user.getCreatedAt());
+        userProfileDTO.setLastLoginAt(user.getLastLoginAt());
 
         return ResponseEntity.ok(userProfileDTO);
 
@@ -136,8 +147,6 @@ public class UserController {
         return ResponseEntity.ok("If an account exists with the given email, a password reset link has been sent to the email address.");
 
     }
-
-
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest user, HttpServletRequest httpRequest){

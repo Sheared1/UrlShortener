@@ -90,6 +90,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.equals("/register.html") ||
                 path.equals("/login.html") ||
                 path.equals("/forgot-password.html") ||
+                path.equals("/profile.html") ||
                 path.startsWith("/static/") ||
                 path.endsWith(".js") ||
                 path.endsWith(".css") ||

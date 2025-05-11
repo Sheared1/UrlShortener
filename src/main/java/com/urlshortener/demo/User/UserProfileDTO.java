@@ -26,6 +26,10 @@ public class UserProfileDTO {
         this.bio = bio;
         this.dateOfBirth = dateOfBirth;
         this.location = location;
+        this.createdAt = createdAt;
+        this.lastLoginAt = lastLoginAt;
+        this.roles = roles;
+        this.emailVerified = emailVerified;
     }
 
     public String getUsername() {

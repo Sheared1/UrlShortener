@@ -1,12 +1,14 @@
 package com.urlshortener.demo.User;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -19,6 +21,18 @@ public class UserService {
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    public ResponseEntity<?> updateLastLoginTime(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user != null){
+            user.setLastLoginAt(LocalDateTime.now());
+            userRepository.save(user);
+        }
+        else {
+            return ResponseEntity.badRequest().body(Map.of("message", "User not found"));
+        }
+        return ResponseEntity.ok().body(Map.of("message", "User last login time updated successfully"));
     }
 
     public User findByUsername(String username){
