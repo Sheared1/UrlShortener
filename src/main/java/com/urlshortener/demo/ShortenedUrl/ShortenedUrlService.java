@@ -4,6 +4,8 @@ import com.urlshortener.demo.Jwt.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
@@ -23,6 +25,7 @@ public class ShortenedUrlService {
 
     private final ShortenedUrlRepository shortenedUrlRepository;
     private final JwtService jwtService;
+    private static final Logger logger = LoggerFactory.getLogger(ShortenedUrlService.class);
 
     public ShortenedUrlService(ShortenedUrlRepository shortenedUrlRepository, JwtService jwtService) {
         this.shortenedUrlRepository = shortenedUrlRepository;
@@ -58,13 +61,16 @@ public class ShortenedUrlService {
                 .map(Authentication::getName)
                 .orElse(null);
 
-        String shortCode = createRandomCode();
-        while (shortenedUrlRepository.getShortenedUrlByShortCode(shortCode) != null){ //(Crude?) way to handle collisions, rerun the algorithm.
-            shortCode = createRandomCode();
-        }
+        String shortCode = null;
 
-        if (customLink != null){
+        if (customLink != null) {
             shortCode = customLink;
+        }
+        else {
+            shortCode = createRandomCode();
+            while (shortenedUrlRepository.getShortenedUrlByShortCode(shortCode) != null){ //Handle collisions, rerun the algorithm.
+                shortCode = createRandomCode();
+            }
         }
 
         LocalDateTime expirationDate = LocalDateTime.now().plusDays(10); //Default expiration date is 10 days from creation date.
