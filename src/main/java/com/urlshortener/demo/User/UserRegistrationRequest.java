@@ -2,8 +2,6 @@ package com.urlshortener.demo.User;
 
 public class UserRegistrationRequest {
 
-    //TODO: Add fields for registration request.
-
     private String username;
 
     private String password;

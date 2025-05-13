@@ -1,5 +1,7 @@
 package com.urlshortener.demo.User;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,6 +15,8 @@ import java.util.Map;
 @Service
 public class UserService {
 
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
     @Autowired
     private final UserRepository userRepository;
     @Autowired
@@ -24,6 +28,9 @@ public class UserService {
     }
 
     public ResponseEntity<?> updateLastLoginTime(String username) {
+
+        logger.info("Updating last login time for user: " + username);
+
         User user = userRepository.findByUsername(username);
         if (user != null){
             user.setLastLoginAt(LocalDateTime.now());
@@ -43,6 +50,8 @@ public class UserService {
     }
 
     public User registerUser(String username, String password, String email, String... roles){
+
+        logger.info("Registering new user with username: {} and email {}", username, email);
 
         User user = new User();
         user.setUsername(username);

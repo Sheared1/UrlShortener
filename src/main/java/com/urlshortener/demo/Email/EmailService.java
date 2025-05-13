@@ -1,5 +1,7 @@
 package com.urlshortener.demo.Email;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -9,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     @Autowired
     private JavaMailSender mailSender;
@@ -21,6 +25,9 @@ public class EmailService {
 
     @Async
     public void sendVerificationEmail(String to, String token) {
+
+        logger.info("Sending verification email to: " + to);
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
         message.setTo(to);
@@ -33,6 +40,9 @@ public class EmailService {
 
     @Async
     public void sendPasswordResetEmail(String to, String token) {
+
+        logger.info("Sending password reset email to: " + to);
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
         message.setTo(to);

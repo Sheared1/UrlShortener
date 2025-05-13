@@ -5,6 +5,8 @@ import com.urlshortener.demo.Redis.RedisRateLimitService;
 import com.urlshortener.demo.User.User;
 import com.urlshortener.demo.User.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/email")
 public class EmailVerificationController {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailVerificationController.class);
 
     @Autowired
     private final UserService userService;
@@ -51,7 +55,7 @@ public class EmailVerificationController {
                     .body(Map.of("message", "Rate limit exceeded. Try again later."));
         }
         if (user.isEmailVerified()) {
-            System.out.println("EMAIL ALREADY VERIFIED FOUND");
+            logger.warn("EMAIL ALREADY VERIFIED FOUND");
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "Email is already verified."));
         }

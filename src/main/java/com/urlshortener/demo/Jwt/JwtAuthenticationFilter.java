@@ -5,6 +5,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +20,8 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     @Autowired
     private final JwtService jwtService;
@@ -37,9 +41,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 if (!shouldNotFilter(request)) {
-                    System.out.println("No Bearer token found for protected endpoint: " + requestPath);
+                    logger.warn("No Bearer token found for protected endpoint: {}", requestPath);
                 } else {
-                    System.out.println("Public endpoint accessed: " + requestPath);
+                    logger.info("Public endpoint accessed: {}", requestPath);
                 }
                 filterChain.doFilter(request, response);
                 return;
@@ -49,14 +53,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             final String jwt = authHeader.substring(7);
             final String username = jwtService.extractUsername(jwt);
 
-            System.out.println("Processing token for username: " + username);
+            logger.info("Processing token for username: {}", username);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                System.out.println("User authorities: " + userDetails.getAuthorities());
+                logger.info("User authorities: {}", userDetails.getAuthorities());
 
                 if (jwtService.isTokenExpired(jwt)) {
-                    System.out.println("Token has expired");
+                    logger.info("Token has expired");
                     throw new ServletException("Token has expired");
                 }
 
@@ -68,13 +72,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    System.out.println("Authentication successful");
+                    logger.info("Authentication successful");
                 }
             }
 
             filterChain.doFilter(request, response);
         } catch (Exception e) {
-            System.out.println("Authentication error: " + e.getMessage());
+            logger.error("Authentication error: {}", e.getMessage());
             SecurityContextHolder.clearContext();
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed: " + e.getMessage());
         }

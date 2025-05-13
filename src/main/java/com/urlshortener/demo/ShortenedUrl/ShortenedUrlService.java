@@ -19,7 +19,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-//TODO: Add logger
 @Service
 public class ShortenedUrlService {
 
@@ -55,6 +54,8 @@ public class ShortenedUrlService {
     @CachePut(value = "urlCache", key = "#result.shortCode") //We are caching the shortCode from the RESULT object (ShortenedUrl), which will be the custom link if used.
     public ShortenedUrl createShortenedUrl(String originalUrl, String customLink, String authHeader) {
 
+        logger.info("Creating shortened URL for original URL: {}", originalUrl);
+
         //Get username from SecurityContext if authenticated, otherwise null
         String username = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
                 .filter(auth -> !(auth instanceof AnonymousAuthenticationToken))
@@ -65,6 +66,7 @@ public class ShortenedUrlService {
 
         if (customLink != null) {
             shortCode = customLink;
+            logger.info("Using custom shortened URL: {}", shortCode);
         }
         else {
             shortCode = createRandomCode();
@@ -86,6 +88,8 @@ public class ShortenedUrlService {
 
         shortenedUrlRepository.save(shortenedUrl);
 
+        logger.info("Successfully created shortened URL with short code: {} and original URL: {}", shortCode, originalUrl);
+
         return shortenedUrl;
 
     }
@@ -97,6 +101,7 @@ public class ShortenedUrlService {
     }
 
     public String createRandomCode(){
+        logger.info("Creating random shortened URL code");
         return RandomStringUtils.randomAlphanumeric(8); //creates alphanumeric 8 character String
     }
 
@@ -119,6 +124,8 @@ public class ShortenedUrlService {
             shortenedUrlInDb.setClickCount(request.getClickCount());
             shortenedUrlInDb.setShortCode(request.getShortCode());
 
+            logger.info("Successfully updated shortened URL");
+
             return shortenedUrlRepository.save(shortenedUrlInDb);
         });
 
@@ -140,6 +147,7 @@ public class ShortenedUrlService {
             return (originalUrl.startsWith("http://") || originalUrl.startsWith("https://"));
         }
         catch (Exception e){ //catches MalformedUrlException
+            logger.error("Invalid URL format provided: {}", originalUrl);
             return false;
         }
     }
@@ -167,7 +175,7 @@ public class ShortenedUrlService {
         return shortenedUrlRepository.getShortenedUrlByShortCode(shortCode);
     }
 
-    //When application sits behind a proxy, getRemoteAddr() would give the proxy IP. Need this method to get actual client's IP.
+    //When application sits behind a proxy, getRemoteAddr() would give the proxy IP. Need this method to get the client's actual IP.
     public String getClientIp(HttpServletRequest httpRequest) {
         String xForwardedFor = httpRequest.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()){

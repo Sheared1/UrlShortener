@@ -7,6 +7,8 @@ import com.urlshortener.demo.Password.PasswordResetService;
 import com.urlshortener.demo.Redis.RedisRateLimitService;
 import com.urlshortener.demo.ShortenedUrl.ShortenedUrlService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
     private final UserService userService;
@@ -151,7 +155,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest user, HttpServletRequest httpRequest){
 
-        System.out.println("Received registration request for username: " + user.getUsername());
+        logger.info("Received registration request for username: {}", user.getUsername());
 
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
         if (!redisRateLimitService.allowRequest(clientIp, "REGISTER")){ //Rate limiting implementation, pass in endpoint name.
@@ -174,9 +178,9 @@ public class UserController {
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Email already exists."));
         }
 
-        System.out.println("Creating new user: " + user.getUsername());
+        logger.info("Creating new user: {}", user.getUsername());
         User registeredUser = userService.registerUser(user.getUsername(), user.getPassword(), user.getEmail(), "USER");
-        System.out.println("User created successfully");
+        logger.info("User created successfully");
 
 
         String verificationToken = emailVerificationTokenService.createVerificationTokenForUser(registeredUser);
