@@ -148,7 +148,7 @@ public class UserController {
             emailService.sendPasswordResetEmail(email, passwordResetService.findByUser(user).getToken());
         }
 
-        return ResponseEntity.ok("If an account exists with the given email, a password reset link has been sent to the email address.");
+        return ResponseEntity.ok(Map.of("message", "If an account exists with the given email, a password reset link has been sent to the email address."));
 
     }
 
@@ -159,13 +159,13 @@ public class UserController {
 
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
         if (!redisRateLimitService.allowRequest(clientIp, "REGISTER")){ //Rate limiting implementation, pass in endpoint name.
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Rate limit exceeded. Try again later.");
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of("message", "Rate limit exceeded. Try again later."));
         }
         if (userService.findByUsername(user.getUsername()) != null){
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Username already exists."));
         }
         if (user.getPassword().length() < 8){
-            return ResponseEntity.badRequest().body("Error: Password must be at least 8 characters long.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Password must be at least 8 characters long."));
         }
         if (!user.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$")){
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Password must contain at least one uppercase letter, one lowercase letter, and one number."));
@@ -180,7 +180,7 @@ public class UserController {
 
         logger.info("Creating new user: {}", user.getUsername());
         User registeredUser = userService.registerUser(user.getUsername(), user.getPassword(), user.getEmail(), "USER");
-        logger.info("User created successfully");
+        logger.info("User created successfully: {}", registeredUser.getUsername());
 
 
         String verificationToken = emailVerificationTokenService.createVerificationTokenForUser(registeredUser);

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -42,13 +43,13 @@ public class ShortenedUrlController {
             String authenticatedUsername = jwtService.extractUsername(token);
 
             if (!username.equals(authenticatedUsername)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You can only access your own URLs.");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "You can only access your own URLs."));
             }
 
             return ResponseEntity.ok(shortenedUrlService.getShortenedUrlsForUser(username));
         }
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No bearer token found");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "No bearer token found"));
 
 
     }
@@ -64,20 +65,21 @@ public class ShortenedUrlController {
         //Rate limiter implementation
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
         if (!redisRateLimitService.allowRequest(clientIp, "GENERATE")){ //Rate limiting implementation, pass in endpoint name.
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("Rate limit exceeded. Try again later.");
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of("message", "Rate limit exceeded. Try again later."));
         }
         if (!shortenedUrlService.isValidUrl(request.getOriginalUrl())){
-            return ResponseEntity.badRequest().body("Error: Invalid URL.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Invalid URL."));
         }
         if (!shortenedUrlService.isValidLength(request.getOriginalUrl())){
-            return ResponseEntity.badRequest().body("Error: URL length greater than 2048 characters.");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: URL length greater than 2048 characters."));
         }
         if (!shortenedUrlService.isValidCustomLink(request.getCustomLink())) {
-            return ResponseEntity.badRequest().body("Error: Custom code invalid or already exists (code must exist, and be 1-8 alphanumeric characters).");
+            System.out.println("Custom link is invalid");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Custom code invalid or already exists (code must exist, and be 1-8 alphanumeric characters)."));
         }
 
         ShortenedUrl shortenedUrl = shortenedUrlService.createShortenedUrl(request.getOriginalUrl(), request.getCustomLink(), authHeader); //If custom link is null, one will be generated.
-        return ResponseEntity.status(HttpStatus.CREATED).body(shortenedUrl);
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Shortened URL created: " + shortenedUrl));
 
     }
 
@@ -85,12 +87,12 @@ public class ShortenedUrlController {
     public ResponseEntity<?> deleteShortenedUrl(@PathVariable Long id){
 
         if (!shortenedUrlService.isValidId(id)){
-            return ResponseEntity.badRequest().body("Error: Invalid ID given");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Invalid ID given"));
         }
 
         shortenedUrlService.deleteShortenedUrl(id);
 
-        return ResponseEntity.status(HttpStatus.OK).body("Deleted successfully.");
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "Deleted successfully."));
 
     }
 
@@ -98,17 +100,17 @@ public class ShortenedUrlController {
     public ResponseEntity<?> updateShortenedUrl(@NotNull @RequestBody ShortenedUrlRequest request){
 
         if (!shortenedUrlService.isValidId(request.getId())){
-            return ResponseEntity.badRequest().body("Error: Invalid ID given");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Invalid ID given"));
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(shortenedUrlService.updateShortenedUrl(request));
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "Shortened URL updated to: " + shortenedUrlService.updateShortenedUrl(request) + "."));
     }
 
     @PutMapping("/toggle/{id}")
     public ResponseEntity<?> toggleActiveShortenedUrl(@PathVariable Long id){
 
         if (!shortenedUrlService.isValidId(id)){
-            return ResponseEntity.badRequest().body("Error: Invalid ID given");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Invalid ID given"));
         }
 
         return ResponseEntity.status(HttpStatus.OK).body(shortenedUrlService.toggleActiveShortenedUrl(id));
@@ -119,10 +121,10 @@ public class ShortenedUrlController {
         //Need to pass in LocalDateTime format (yyyy-MM-ddThh:mm:ss.SSS)
 
         if (!shortenedUrlService.isValidId(id)){
-            return ResponseEntity.badRequest().body("Error: Invalid ID given");
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Invalid ID given"));
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(shortenedUrlService.changeExpirationShortenedUrl(id, request.getExpirationDate()));
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "Expiration date updated successfully to " + request.getExpirationDate() + "."));
 
     }
 
