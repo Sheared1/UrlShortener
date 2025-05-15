@@ -1,11 +1,17 @@
 package com.urlshortener.demo.ShortenedUrl;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.urlshortener.demo.Jwt.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
@@ -14,6 +20,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +33,9 @@ public class ShortenedUrlService {
     private final ShortenedUrlRepository shortenedUrlRepository;
     private final JwtService jwtService;
     private static final Logger logger = LoggerFactory.getLogger(ShortenedUrlService.class);
+
+    @Value("${app.url}/")
+    private String baseUrl;
 
     public ShortenedUrlService(ShortenedUrlRepository shortenedUrlRepository, JwtService jwtService) {
         this.shortenedUrlRepository = shortenedUrlRepository;
@@ -86,6 +97,18 @@ public class ShortenedUrlService {
         shortenedUrl.setClickCount(0);
         shortenedUrl.setCreatedBy(username);
 
+        //QR Code Generation
+        String fullShortenedUrl = baseUrl + shortCode;
+        try {
+            byte[] qrCodeBytes = generateQRCodeImage(fullShortenedUrl, 250, 250); // width, height
+            shortenedUrl.setQrCodeImage(qrCodeBytes);
+            logger.info("Successfully generated QR code for short code: {}", shortCode);
+        } catch (WriterException | IOException e) {
+            //For error handling, for now set the QR code to null and log it.
+            logger.error("Could not generate QR code for {}: {}", fullShortenedUrl, e.getMessage());
+            shortenedUrl.setQrCodeImage(null);
+        }
+
         shortenedUrlRepository.save(shortenedUrl);
 
         logger.info("Successfully created shortened URL with short code: {} and original URL: {}", shortCode, originalUrl);
@@ -93,6 +116,16 @@ public class ShortenedUrlService {
         return shortenedUrl;
 
     }
+
+    private byte[] generateQRCodeImage(String text, int width, int height) throws WriterException, IOException {
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
+
+        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+        return pngOutputStream.toByteArray();
+    }
+
 
     public boolean isValidCustomLink(String customLink) {
         if (customLink == null) return true;
