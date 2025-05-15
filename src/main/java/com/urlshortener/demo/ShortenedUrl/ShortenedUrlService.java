@@ -67,11 +67,12 @@ public class ShortenedUrlService {
 
         logger.info("Creating shortened URL for original URL: {}", originalUrl);
 
-        //Get username from SecurityContext if authenticated, otherwise null
-        String username = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .filter(auth -> !(auth instanceof AnonymousAuthenticationToken))
-                .map(Authentication::getName)
-                .orElse(null);
+        String username = null;
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            username = jwtService.extractUsername(token);
+        }
 
         String shortCode = null;
 
