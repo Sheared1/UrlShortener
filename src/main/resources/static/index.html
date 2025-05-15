@@ -66,6 +66,10 @@
             font-size: 18px;
             color: #2196F3;
             word-break: break-all;
+            text-decoration: none;
+        }
+        .shortened-url:hover {
+            text-decoration: underline;
         }
         .error {
             color: #f44336;
@@ -93,7 +97,8 @@
     </div>
     <div id="result">
         <h3>Your shortened URL:</h3>
-        <p class="shortened-url" id="shortenedUrl"></p>
+        <a class="shortened-url" id="shortenedUrl" href="#" target="_blank"></a>
+        <br>
         <button id="copyButton" onclick="copyToClipboard()" style="padding: 8px 16px;">Copy</button>
         <img id="qrCodeImage" src="" alt="QR Code">
     </div>
@@ -126,12 +131,14 @@
         const errorElement = document.getElementById('errorMessage');
         const resultElement = document.getElementById('result');
         const qrCodeImageElement = document.getElementById('qrCodeImage');
+        const shortenedUrlElement = document.getElementById('shortenedUrl');
 
         errorElement.textContent = '';
         resultElement.style.display = 'none';
         qrCodeImageElement.style.display = 'none'; // Hide QR code initially
         qrCodeImageElement.src = ''; // Clear previous QR code
-
+        shortenedUrlElement.textContent = ''; // Clear previous URL text
+        shortenedUrlElement.href = '#'; // Reset href
 
         try {
             const response = await fetch('/api/urls/generate', {
@@ -158,7 +165,7 @@
 
             resultElement.style.display = 'block';
             document.getElementById('shortenedUrl').textContent = shortUrl;
-            // document.getElementById('shortenedUrl').href = shortUrl; // Can change the <p> tag back to a to make it clickable
+            document.getElementById('shortenedUrl').href = shortUrl;
 
             // Set the QR code image source and display it
             if (data.shortCode) {
