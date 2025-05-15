@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.coyote.Response;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +30,28 @@ public class ShortenedUrlController {
         this.shortenedUrlService = shortenedUrlService;
         this.redisRateLimitService = redisRateLimitService;
         this.jwtService = jwtService;
+    }
+
+    @GetMapping("/qr/{shortCode}")
+    public ResponseEntity<?> getQrCode(@PathVariable String shortCode){
+
+        ShortenedUrl shortenedUrl = shortenedUrlService.getShortenedUrlByShortCode(shortCode);
+
+        if (shortenedUrl == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Shortened URL not found for short code: " + shortCode));
+        }
+        if (shortenedUrl.getQrCodeImage() == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "QR code not found for short code: " + shortCode));
+        }
+
+        byte[] qrImageBytes = shortenedUrl.getQrCodeImage();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.IMAGE_PNG);
+        headers.setContentLength(qrImageBytes.length);
+
+        return new ResponseEntity<>(qrImageBytes, headers, HttpStatus.OK);
+
     }
 
     @GetMapping("/all")
