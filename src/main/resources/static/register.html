@@ -80,15 +80,6 @@
       const confirmPassword = document.getElementById('confirmPassword').value;
       const errorElement = document.getElementById('errorMessage');
 
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-          messageDiv.innerHTML = 'Please enter a valid email address';
-          messageDiv.className = 'error';
-          return;
-      }
-
-
       if (password !== confirmPassword) {
           errorElement.textContent = 'Passwords do not match';
           return false;
@@ -106,11 +97,6 @@
                 email: email
               })
           });
-
-          if (response.status === 429) {
-              alert("Too many registration attempts. Please wait a moment before trying again.");
-              return false;
-          }
 
           if (!response.ok) {
               const data = await response.json();

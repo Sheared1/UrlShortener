@@ -159,7 +159,7 @@ public class UserController {
 
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
         if (!redisRateLimitService.allowRequest(clientIp, "REGISTER")){ //Rate limiting implementation, pass in endpoint name.
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of("message", "Rate limit exceeded. Try again later."));
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of("message", "Error: Rate limit exceeded. Try again later."));
         }
         if (userService.findByUsername(user.getUsername()) != null){
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Username already exists."));
@@ -172,6 +172,9 @@ public class UserController {
         }
         if (!user.getPassword().matches("^(?=.*[a-zA-Z0-9!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).+$")){
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Password must contain at least one special character."));
+        }
+        if (!user.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")){
+            return ResponseEntity.badRequest().body(Map.of("message", "Error: Please enter a valid email address."));
         }
 
         if (userService.findByEmail(user.getEmail()) != null){

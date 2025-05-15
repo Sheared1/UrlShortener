@@ -226,7 +226,7 @@
         const decodedPayload = JSON.parse(atob(payload));
         const username = decodedPayload.sub;
 
-        // Add logging to debug the request
+        // Logging to debug the request
         console.log('Making request for username:', username);
 
         const response = await fetch(`/api/urls/user/${username}`, {
