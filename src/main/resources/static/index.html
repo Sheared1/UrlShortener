@@ -119,11 +119,6 @@
         errorElement.textContent = '';
         resultElement.style.display = 'none';
 
-        if (!originalUrl) {
-            errorElement.textContent = 'Please enter a URL';
-            return;
-        }
-
         try {
             const response = await fetch('/api/urls/generate', {
                 method: 'POST',
