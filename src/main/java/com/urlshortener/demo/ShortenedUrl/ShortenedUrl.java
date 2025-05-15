@@ -36,6 +36,18 @@ public class ShortenedUrl implements Serializable {
     @Column
     private String createdBy;
 
+    @Lob //Means "Large Object"
+    @Column(name = "qr_code_image", columnDefinition = "BLOB")
+    private byte[] qrCodeImage;
+
+    public byte[] getQrCodeImage() {
+        return qrCodeImage;
+    }
+
+    public void setQrCodeImage(byte[] qrCodeImage) {
+        this.qrCodeImage = qrCodeImage;
+    }
+
     public String getCreatedBy() {
         return createdBy;
     }
