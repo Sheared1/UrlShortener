@@ -290,6 +290,17 @@
       urlsToDisplay.forEach(url => {
           if (!url) return; // Skip if url object is undefined
 
+          const expirationDate = url.expirationDate ? new Date(url.expirationDate) : null;
+          const now = new Date();
+          const isExpired = expirationDate ? expirationDate < now : false;
+
+          // Effective status: if expired, it's inactive. Otherwise, use its active flag from the data.
+          const effectiveIsActive = !isExpired && url.active;
+
+          const statusText = effectiveIsActive ? 'Active' : 'Inactive';
+          const statusClass = effectiveIsActive ? 'status-active' : 'status-inactive';
+          const toggleButtonText = effectiveIsActive ? 'Deactivate' : 'Activate';
+
           const row = document.createElement('tr');
           row.innerHTML = `
               <td>${url.shortCode || ''}</td>
@@ -297,12 +308,12 @@
               <td>${url.createdAt ? new Date(url.createdAt).toLocaleDateString() : ''}</td>
               <td>${url.expirationDate ? new Date(url.expirationDate).toLocaleDateString() : ''}</td>
               <td>${url.clickCount || 0}</td>
-              <td class="${url.active ? 'status-active' : 'status-inactive'}">
-                  ${url.active ? 'Active' : 'Inactive'}
+              <td class="${statusClass}">
+                  ${statusText}
               </td>
               <td>
                   <button class="action-button toggle-btn" onclick="toggleUrlStatus(${url.id})">
-                      ${url.active ? 'Deactivate' : 'Activate'}
+                      ${toggleButtonText}
                   </button>
                   <button class="action-button delete-btn" onclick="deleteUrl(${url.id})">
                       Delete
@@ -313,53 +324,6 @@
       });
   }
 
-  // Add event listeners for pagination
-  document.addEventListener('DOMContentLoaded', () => {
-      loadUserUrls();
-
-      // Add click handlers for pagination buttons
-      document.getElementById('prevPage')?.addEventListener('click', () => {
-          if (currentPage > 1) {
-              currentPage--;
-              displayUrls();
-              updatePagination();
-          }
-      });
-
-      document.getElementById('nextPage')?.addEventListener('click', () => {
-          const totalPages = Math.ceil(allUrls.length / itemsPerPage);
-          if (currentPage < totalPages) {
-              currentPage++;
-              displayUrls();
-              updatePagination();
-          }
-      });
-  });
-  // Add event listeners for pagination
-  document.addEventListener('DOMContentLoaded', () => {
-      loadUserUrls();
-
-      // Add click handlers for pagination buttons
-      document.getElementById('prevPage')?.addEventListener('click', () => {
-          if (currentPage > 1) {
-              currentPage--;
-              displayUrls();
-              updatePagination();
-          }
-      });
-
-      document.getElementById('nextPage')?.addEventListener('click', () => {
-          const totalPages = Math.ceil(allUrls.length / itemsPerPage);
-          if (currentPage < totalPages) {
-              currentPage++;
-              displayUrls();
-              updatePagination();
-          }
-      });
-  });
-
-
-
   async function toggleUrlStatus(id) {
       try {
           const response = await makeAuthenticatedRequest(`/api/urls/toggle/${id}`, {
@@ -367,7 +331,9 @@
           });
 
           if (!response.ok) {
-              throw new Error('Failed to toggle URL status');
+              const errorText = await response.text();
+              console.error('Failed to toggle URL status:', errorText);
+              throw new Error(`Failed to toggle URL status: ${errorText}`);
           }
 
           // Reload the URLs to show updated status
@@ -400,9 +366,27 @@
       }
   }
 
-  // Load URLs when the page loads
+  // Add event listeners for pagination
   document.addEventListener('DOMContentLoaded', () => {
       loadUserUrls();
+
+      // Add click handlers for pagination buttons
+      document.getElementById('prevPage')?.addEventListener('click', () => {
+          if (currentPage > 1) {
+              currentPage--;
+              displayUrls();
+              updatePagination();
+          }
+      });
+
+      document.getElementById('nextPage')?.addEventListener('click', () => {
+          const totalPages = Math.ceil(allUrls.length / itemsPerPage);
+          if (currentPage < totalPages) {
+              currentPage++;
+              displayUrls();
+              updatePagination();
+          }
+      });
   });
 </script>
 </body>

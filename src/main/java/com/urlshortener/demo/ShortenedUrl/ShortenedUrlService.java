@@ -124,6 +124,11 @@ public class ShortenedUrlService {
             shortenedUrlInDb.setClickCount(request.getClickCount());
             shortenedUrlInDb.setShortCode(request.getShortCode());
 
+            // After all potential updates, including expirationDate:
+            if (shortenedUrlInDb.getExpirationDate() != null && shortenedUrlInDb.getExpirationDate().isBefore(LocalDateTime.now())) {
+                shortenedUrlInDb.setActive(false); // Enforce inactive if expired
+            }
+
             logger.info("Successfully updated shortened URL");
 
             return shortenedUrlRepository.save(shortenedUrlInDb);
@@ -136,7 +141,17 @@ public class ShortenedUrlService {
         Optional<ShortenedUrl> shortenedUrl = shortenedUrlRepository.findById(id);
 
         return shortenedUrlRepository.findById(id).map(shortenedUrlInDb ->{
-            shortenedUrlInDb.setActive(!shortenedUrlInDb.isActive());
+            LocalDateTime now = LocalDateTime.now();
+
+            // Check if the URL is expired
+            if (shortenedUrlInDb.getExpirationDate() != null && shortenedUrlInDb.getExpirationDate().isBefore(now)) {
+                shortenedUrlInDb.setActive(false); // If expired, always set to inactive
+            } else {
+                shortenedUrlInDb.setActive(!shortenedUrlInDb.isActive());
+            }
+
+            logger.info("Toggled active status for URL ID {}: new status is {}", id, shortenedUrlInDb.isActive());
+
             return shortenedUrlRepository.save(shortenedUrlInDb);
         });
     }
