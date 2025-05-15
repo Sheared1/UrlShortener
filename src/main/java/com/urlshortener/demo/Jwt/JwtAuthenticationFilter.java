@@ -103,7 +103,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.equals("/api/urls/generate") ||
                 path.startsWith("/api/urls/redirect/") ||
                 path.equals("/api/users/register") ||
-                path.equals("/api/auth/login");
+                path.equals("/api/auth/login") ||
+                path.startsWith("/api/urls/qr/");
     }
 
 }

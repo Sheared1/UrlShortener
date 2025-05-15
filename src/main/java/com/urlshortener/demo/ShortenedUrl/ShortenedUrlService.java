@@ -15,9 +15,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -99,7 +96,7 @@ public class ShortenedUrlService {
         shortenedUrl.setCreatedBy(username);
 
         //QR Code Generation
-        String fullShortenedUrl = baseUrl + shortCode;
+        String fullShortenedUrl = baseUrl + "r/" + shortCode;
         try {
             byte[] qrCodeBytes = generateQRCodeImage(fullShortenedUrl, 250, 250); // width, height
             shortenedUrl.setQrCodeImage(qrCodeBytes);

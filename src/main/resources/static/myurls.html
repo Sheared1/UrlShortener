@@ -171,6 +171,7 @@
         <th>Expiration Date</th>
         <th>Click Count</th>
         <th>Status</th>
+        <th>QR Code</th>
         <th>Actions</th>
       </tr>
       </thead>
@@ -311,6 +312,7 @@
               <td class="${statusClass}">
                   ${statusText}
               </td>
+              <td><img src="/api/urls/qr/${url.shortCode}" alt="QR Code" width="100" height="100"/></td>
               <td>
                   <button class="action-button toggle-btn" onclick="toggleUrlStatus(${url.id})">
                       ${toggleButtonText}
