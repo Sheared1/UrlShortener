@@ -87,9 +87,9 @@ public class ShortenedUrlController {
 
         //Rate limiter implementation
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
-        if (!redisRateLimitService.allowRequest(clientIp, "GENERATE")){ //Rate limiting implementation, pass in endpoint name.
+        /*if (!redisRateLimitService.allowRequest(clientIp, "GENERATE")){ //Rate limiting implementation, pass in endpoint name.
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of("message", "Rate limit exceeded. Try again later."));
-        }
+        }*/
         if (!shortenedUrlService.isValidUrl(request.getOriginalUrl())){
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Invalid URL."));
         }
@@ -102,7 +102,7 @@ public class ShortenedUrlController {
         }
 
         ShortenedUrl shortenedUrl = shortenedUrlService.createShortenedUrl(request.getOriginalUrl(), request.getCustomLink(), authHeader); //If custom link is null, one will be generated.
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "Shortened URL created: " + shortenedUrl));
+        return ResponseEntity.status(HttpStatus.CREATED).body(shortenedUrl);
 
     }
 
