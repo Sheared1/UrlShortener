@@ -71,6 +71,15 @@
             color: #f44336;
             margin-top: 10px;
         }
+        #qrCodeImage {
+            margin-top: 15px;
+            max-width: 200px;
+            height: auto;
+            border: 1px solid #ddd;
+            display: none;
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
 </head>
 <body>
@@ -86,6 +95,7 @@
         <h3>Your shortened URL:</h3>
         <p class="shortened-url" id="shortenedUrl"></p>
         <button id="copyButton" onclick="copyToClipboard()" style="padding: 8px 16px;">Copy</button>
+        <img id="qrCodeImage" src="" alt="QR Code">
     </div>
     <p id="errorMessage" class="error"></p>
 </div>
@@ -115,9 +125,13 @@
         const customLink = document.getElementById('customLink').value;
         const errorElement = document.getElementById('errorMessage');
         const resultElement = document.getElementById('result');
+        const qrCodeImageElement = document.getElementById('qrCodeImage');
 
         errorElement.textContent = '';
         resultElement.style.display = 'none';
+        qrCodeImageElement.style.display = 'none'; // Hide QR code initially
+        qrCodeImageElement.src = ''; // Clear previous QR code
+
 
         try {
             const response = await fetch('/api/urls/generate', {
@@ -136,7 +150,7 @@
             const data = await response.json();
 
             if (!response.ok) {
-                errorElement.textContent = data.message;
+                errorElement.textContent = data.message || 'Error: Failed to shorten URL.';
                 return;
             }
 
@@ -144,7 +158,14 @@
 
             resultElement.style.display = 'block';
             document.getElementById('shortenedUrl').textContent = shortUrl;
-            document.getElementById('shortenedUrl').href = shortUrl;
+            // document.getElementById('shortenedUrl').href = shortUrl; // Can change the <p> tag back to a to make it clickable
+
+            // Set the QR code image source and display it
+            if (data.shortCode) {
+                qrCodeImageElement.src = `/api/urls/qr/${data.shortCode}`;
+                qrCodeImageElement.style.display = 'block'; // Show the QR code image
+            }
+
         } catch (error) {
             errorElement.textContent = 'Error: Failed to shorten URL';
         }
