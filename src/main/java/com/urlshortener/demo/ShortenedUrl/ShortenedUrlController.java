@@ -101,7 +101,7 @@ public class ShortenedUrlController {
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Custom code invalid or already exists (code must exist, and be 1-8 alphanumeric characters)."));
         }
 
-        ShortenedUrl shortenedUrl = shortenedUrlService.createShortenedUrl(request.getOriginalUrl(), request.getCustomLink(), authHeader); //If custom link is null, one will be generated.
+        ShortenedUrl shortenedUrl = shortenedUrlService.createShortenedUrl(request.getOriginalUrl(), request.getCustomLink(), request.getExpirationDate(), authHeader); //If custom link is null, one will be generated.
         return ResponseEntity.status(HttpStatus.CREATED).body(shortenedUrl);
 
     }
