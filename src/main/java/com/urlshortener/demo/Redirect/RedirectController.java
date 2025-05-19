@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+//Needs to be controller to support redirects, Controller returns a view, RestController responds with a response body.
 @Controller
 public class RedirectController {
 
