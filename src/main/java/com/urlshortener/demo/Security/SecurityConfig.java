@@ -51,7 +51,7 @@ public class SecurityConfig {
                                 .requestMatchers("/*.js").permitAll()               // Allow JavaScript files
                                 .requestMatchers("/*.css").permitAll()              // Allow CSS files
                                 .requestMatchers("/favicon.ico").permitAll()        // Allow favicon
-                                .requestMatchers("/error").permitAll()  // Spring Boot's default error handling
+                                .requestMatchers("/error.html").permitAll()         // Allow error page
                                 .requestMatchers("/404").permitAll()    // For custom 404 page if needed
 
 

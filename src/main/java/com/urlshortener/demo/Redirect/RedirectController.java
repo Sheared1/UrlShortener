@@ -36,7 +36,7 @@ public class RedirectController {
 
         //Could add custom responses or redirect to a different webpage, depending on the condition below.
         if (shortenedUrl == null || !shortenedUrl.isActive() || (shortenedUrl.getExpirationDate() != null && shortenedUrl.getExpirationDate().isBefore(LocalDateTime.now()))){
-            return "redirect:/404";
+            return "redirect:/error.html"; //Redirect to error page if url is not found or expired.
         }
 
         shortenedUrlService.incrementClickCount(shortenedUrl); //Async
