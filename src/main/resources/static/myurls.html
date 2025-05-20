@@ -313,7 +313,11 @@
 
           const row = document.createElement('tr');
           row.innerHTML = `
-              <td>${url.shortCode || ''}</td>
+              <td>
+                <a href="${location.origin}/r/${url.shortCode}" target="_blank">
+                  ${url.shortCode || ''}
+                </a>
+              </td>
               <td class="url-cell"><a href="${url.originalUrl || '#'}" target="_blank">${url.originalUrl || ''}</a></td>
               <td>${url.createdAt ? new Date(url.createdAt).toLocaleDateString() : ''}</td>
               <td>${url.expirationDate ? new Date(url.expirationDate).toLocaleDateString() : ''}</td>
