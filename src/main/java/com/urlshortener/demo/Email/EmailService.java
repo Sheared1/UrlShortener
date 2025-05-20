@@ -33,7 +33,7 @@ public class EmailService {
         message.setTo(to);
         message.setSubject("Email Verification");
         message.setText("Please click the link below to verify your email:\n"
-                + "http://localhost:8080/api/email/verify-email?token=" + token);
+                + appUrl + "/api/email/verify-email?token=" + token);
 
         mailSender.send(message);
     }
@@ -48,8 +48,8 @@ public class EmailService {
         message.setTo(to);
         message.setSubject("Password Reset Request");
         message.setText("Hello,\n\n" +
-                "You have requested to reset your password. Please click the link below to set a new password:\n\n" +
-                appUrl + "/reset-password.html?token=" + token + "\n\n" +
+                "You have requested to reset your password. Please click the link below to set a new password:\n\n"
+                + appUrl + "/reset-password.html?token=" + token + "\n\n" +
                 "If you did not request this password reset, please ignore this email.\n\n" +
                 "This link will expire in 15 minutes.\n\n"
         );
