@@ -93,11 +93,38 @@ function createNavbar() {
             <a href="myurls-loader.html">My Urls</a>
         </span>
         <a href="#" id="profileLinkNav">Profile</a>
+        <a href="/admin.html" id="adminLink" style="display: none;">Admin</a>
         <a href="#" onclick="logout()" id="logoutLink">Logout</a>
     `;
 
     //Insert the navbar at the start of the body
     document.body.insertBefore(navbar, document.body.firstChild);
+}
+
+async function getUserRoles() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) return [];
+    try {
+        const response = await fetch('/api/users/get-user-roles', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) return [];
+        const data = await response.json();
+        let roles = [];
+        if (Array.isArray(data.roles)) {
+            roles = data.roles;
+        } else if (typeof data.roles === 'string') {
+            roles = [data.roles];
+        } else if (data.roles && typeof data.roles === 'object') {
+            // fallback for object/map style
+            roles = Object.keys(data.roles).filter(key => data.roles[key]);
+        }
+        // Ensure all roles start with ROLE_
+        return roles.map(role => role.startsWith('ROLE_') ? role : 'ROLE_' + role);
+    } catch (e) {
+        console.error('Error fetching roles:', e);
+        return [];
+    }
 }
 
 function updateNavbar() {
@@ -267,7 +294,7 @@ function handleProfileLinkClick(event) {
 
 
 //Wait for the DOM to be fully loaded before creating and updating the navbar
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     addNavbarStyles();  //Injecting styles
     createNavbar();
     updateNavbar();
@@ -279,4 +306,16 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         console.warn('Profile link element (profileLinkNav) not found.');
     }
+
+    //Show admin link if user has ROLE_ADMIN
+    const adminLink = document.getElementById('adminLink');
+    if (adminLink) {
+        const roles = await getUserRoles();
+        if (roles.includes('ROLE_ADMIN')) {
+            adminLink.style.display = 'inline';
+        } else {
+            adminLink.style.display = 'none';
+        }
+    }
+
 });

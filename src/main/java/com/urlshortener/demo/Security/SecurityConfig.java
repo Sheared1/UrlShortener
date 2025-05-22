@@ -35,7 +35,14 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())   //Commonly disabled for API endpoints
                 .authorizeHttpRequests(auth -> auth
-                                //Public endpoints here
+
+                                //Secured endpoints here
+                                .requestMatchers("/api/analytics/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/api/users/delete").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/myurls.html").hasAuthority("ROLE_USER")
+                                .requestMatchers("/api/urls/user/**").hasAuthority("ROLE_USER")
+
+                                //Public endpoints here:
                                 .requestMatchers("/").permitAll()                      // Allow access to root path
                                 .requestMatchers("/r/**").permitAll()
                                 .requestMatchers("/index.html").permitAll()           // Allow access to index.html
@@ -54,7 +61,7 @@ public class SecurityConfig {
                                 .requestMatchers("/error.html").permitAll()         // Allow error page
                                 .requestMatchers("/404").permitAll()    // For custom 404 page if needed
 
-
+                                .requestMatchers("/admin.html").permitAll()     //Check is done in frontend
 
 
 
@@ -71,11 +78,7 @@ public class SecurityConfig {
 
 
 
-                                //Secured endpoints here
-                                .requestMatchers("/api/analytics/**").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers("/api/users/delete").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers("/myurls.html").hasAuthority("ROLE_USER")
-                                .requestMatchers("/api/urls/user/**").hasAuthority("ROLE_USER")
+
 
                                 //Any request that doesn't match the above rules will require authentication (but no specific role):
                                 .anyRequest().authenticated()

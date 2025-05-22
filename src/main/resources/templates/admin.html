@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin</title>
+  <script src="common.js"></script>
+  <style>
+    body { display: none; }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const token = localStorage.getItem('jwtToken');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+      fetch('/api/users/get-user-roles', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(response => {
+        if (!response.ok) {
+          window.location.href = '/login.html';
+          return;
+        }
+        return response.json();
+      })
+      .then(data => {
+        const roles = Array.isArray(data.roles) ? data.roles : [data.roles];
+        if (!roles.includes('ROLE_ADMIN')) {
+          document.body.innerHTML = 'Access denied.';
+        } else {
+          document.getElementById('admin-content').style.display = 'block';
+        }
+        document.body.style.display = 'block';
+      })
+      .catch(() => {
+        window.location.href = '/login.html';
+      });
+    });
+  </script>
+</head>
+<body>
+<div id="admin-content" style="display:none;">
+  <h1>Admin Panel</h1>
+</div>
+</body>
+</html>

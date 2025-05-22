@@ -47,6 +47,30 @@ public class UserController {
         this.jwtService = jwtService;
     }
 
+    @GetMapping("/get-user-roles")
+    public ResponseEntity<?> getUserRoles(@RequestHeader("Authorization") String authHeader){
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "No bearer token found"));
+        }
+
+        String token = authHeader.substring(7); //Removes "Bearer " prefix
+        String username = jwtService.extractUsername(token);
+        User user = userService.findByUsername(username);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+        }
+
+        Map<String, Object> response = Map.of(
+                "username", user.getUsername(),
+                "roles", user.getRoles()
+        );
+
+        return ResponseEntity.ok(response);
+
+    }
+
     @GetMapping("/profile")
     public ResponseEntity<?> getUserProfile(@RequestHeader("Authorization") String authHeader){
 
