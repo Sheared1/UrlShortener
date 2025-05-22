@@ -24,8 +24,9 @@
         return response.json();
       })
       .then(data => {
-        const roles = Array.isArray(data.roles) ? data.roles : [data.roles];
-        if (!roles.includes('ROLE_ADMIN')) {
+        const roles = data.roles || [];
+        console.log('User roles:', roles);
+        if (!roles.includes('ADMIN')) {
           document.body.innerHTML = 'Access denied.';
         } else {
           document.getElementById('admin-content').style.display = 'block';
