@@ -1,6 +1,7 @@
 package com.urlshortener.demo.Analytics;
 
 import com.urlshortener.demo.ShortenedUrl.ShortenedUrl;
+import com.urlshortener.demo.ShortenedUrl.ShortenedUrlRepository;
 import com.urlshortener.demo.ShortenedUrl.ShortenedUrlService;
 import com.urlshortener.demo.UrlClick.UrlClick;
 import com.urlshortener.demo.UrlClick.UrlClickRepository;
@@ -28,9 +29,26 @@ public class AnalyticsController {
     @Autowired
     private final UrlClickRepository urlClickRepository;
 
-    public AnalyticsController(UrlClickService urlClickService, ShortenedUrlService shortenedUrlService, UrlClickRepository urlClickRepository) {
+    @Autowired
+    private final ShortenedUrlRepository shortenedUrlRepository;
+
+    public AnalyticsController(UrlClickService urlClickService, ShortenedUrlService shortenedUrlService, UrlClickRepository urlClickRepository, ShortenedUrlRepository shortenedUrlRepository) {
         this.shortenedUrlService = shortenedUrlService;
         this.urlClickRepository = urlClickRepository;
+        this.shortenedUrlRepository = shortenedUrlRepository;
+    }
+
+    @GetMapping("/top-urls")
+    public ResponseEntity<?> getTopUrls() { //Gets top 10 urls by click count.
+
+        List<ShortenedUrl> topUrls = shortenedUrlRepository.findTop10ByOrderByClickCountDesc();
+
+        if (topUrls.isEmpty()){
+            return ResponseEntity.ok("No URL clicks found.");
+        }
+
+        return ResponseEntity.ok(topUrls);
+
     }
 
     @GetMapping("/id/{id}")

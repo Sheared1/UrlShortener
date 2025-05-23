@@ -11,4 +11,6 @@ public interface ShortenedUrlRepository extends JpaRepository<ShortenedUrl, Long
     ShortenedUrl getShortenedUrlByShortCode(String code);
 
     List<ShortenedUrl> findByCreatedBy(String username);
+
+    List<ShortenedUrl> findTop10ByOrderByClickCountDesc();
 }
