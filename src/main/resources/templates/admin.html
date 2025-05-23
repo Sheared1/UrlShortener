@@ -5,6 +5,32 @@
   <script src="common.js"></script>
   <style>
     body { display: none; }
+
+    #admin-content h1 {
+      color: red;
+    }
+    #admin-content {
+      text-align: center;
+    }
+    .centered-table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      min-width: 500px;
+      background: #fafbfc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .centered-table th, .centered-table td {
+      border: 1px solid #d1d5da;
+      padding: 10px 16px;
+      text-align: left;
+    }
+    .centered-table th {
+      background: #f6f8fa;
+      font-weight: bold;
+    }
+    .centered-table tr:nth-child(even) {
+      background: #f0f4f8;
+    }
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -25,11 +51,33 @@
       })
       .then(data => {
         const roles = data.roles || [];
-        console.log('User roles:', roles);
         if (!roles.includes('ADMIN')) {
           document.body.innerHTML = 'Access denied.';
         } else {
           document.getElementById('admin-content').style.display = 'block';
+
+          // Display admin panel content, do fetches here, etc.
+
+          fetch('/api/analytics/top-urls', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          })
+          .then(res => res.json())
+          .then(urls => {
+            const table = document.getElementById('top-urls-table');
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            if (Array.isArray(urls) && urls.length > 0) {
+              urls.forEach(url => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${url.shortCode || url.shortUrl}</td><td>${url.originalUrl}</td><td>${url.clickCount}</td>`;
+                tbody.appendChild(row);
+              });
+              table.style.display = 'table';
+            } else {
+              tbody.innerHTML = '<tr><td colspan="3">No URL clicks found.</td></tr>';
+              table.style.display = 'table';
+            }
+          });
         }
         document.body.style.display = 'block';
       })
@@ -42,6 +90,18 @@
 <body>
 <div id="admin-content" style="display:none;">
   <h1>Admin Panel</h1>
+
+  <h2>Top URLs (Click Count)</h2>
+  <table id="top-urls-table" class="centered-table" style="margin-top:20px; display:none;">
+    <thead>
+    <tr>
+      <th>Short URL</th>
+      <th>Original URL</th>
+      <th>Click Count</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 </div>
 </body>
 </html>
