@@ -90,21 +90,21 @@
         window.location.href = '/login.html';
       });
 
-      //Load recently registered users
-      loadRecentUsers();
+      //Load registered users
+      loadUsers();
 
     });
 
 
 
 
-    function loadRecentUsers() {
+    function loadUsers() {
       fetch('/api/analytics/get-recent-users', {
         headers: { 'Authorization': 'Bearer ' + token }
       })
       .then(res => res.json())
       .then(users => {
-        const table = document.getElementById('recently-registered-users-table');
+        const table = document.getElementById('registered-users-table');
         const tbody = table.querySelector('tbody');
         tbody.innerHTML = '';
         if (Array.isArray(users) && users.length > 0) {
@@ -168,8 +168,8 @@
     <tbody></tbody>
   </table>
 
-  <h2>Recently Registered Users</h2>
-  <table id="recently-registered-users-table" class="centered-table" style="margin-top:20px; display:none;">
+  <h2>Registered Users</h2>
+  <table id="registered-users-table" class="centered-table" style="margin-top:20px; display:none;">
     <thead>
     <tr>
       <th>User ID</th>
