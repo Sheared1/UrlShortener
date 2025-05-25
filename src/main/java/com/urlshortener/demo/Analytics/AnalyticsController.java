@@ -6,14 +6,13 @@ import com.urlshortener.demo.ShortenedUrl.ShortenedUrlService;
 import com.urlshortener.demo.UrlClick.UrlClick;
 import com.urlshortener.demo.UrlClick.UrlClickRepository;
 import com.urlshortener.demo.UrlClick.UrlClickService;
+import com.urlshortener.demo.User.User;
+import com.urlshortener.demo.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -32,10 +31,28 @@ public class AnalyticsController {
     @Autowired
     private final ShortenedUrlRepository shortenedUrlRepository;
 
-    public AnalyticsController(UrlClickService urlClickService, ShortenedUrlService shortenedUrlService, UrlClickRepository urlClickRepository, ShortenedUrlRepository shortenedUrlRepository) {
+    @Autowired
+    private final UserRepository userRepository;
+
+    public AnalyticsController(UrlClickService urlClickService, ShortenedUrlService shortenedUrlService, UrlClickRepository urlClickRepository, ShortenedUrlRepository shortenedUrlRepository, UserRepository userRepository) {
         this.shortenedUrlService = shortenedUrlService;
         this.urlClickRepository = urlClickRepository;
         this.shortenedUrlRepository = shortenedUrlRepository;
+        this.userRepository = userRepository;
+    }
+
+    @GetMapping("/get-recent-users")
+    public ResponseEntity<?> getRecentUsers(){
+
+        //Get the most recent 10 users who created an account (by createdAt).
+        List<User> recentUsers = userRepository.findTop10ByOrderByCreatedAtDesc();
+
+        if (recentUsers.isEmpty()){
+            return ResponseEntity.ok("No users found.");
+        }
+
+        return ResponseEntity.ok(recentUsers);
+
     }
 
     @GetMapping("/top-urls")
