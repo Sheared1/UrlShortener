@@ -33,8 +33,10 @@
     }
   </style>
   <script>
+    let token;
+
     document.addEventListener('DOMContentLoaded', function() {
-      const token = localStorage.getItem('jwtToken');
+      token = localStorage.getItem('jwtToken');
       if (!token) {
         window.location.href = '/login.html';
         return;
@@ -81,50 +83,54 @@
             }
           });
 
-          //Fetch recent users
-
-          fetch('/api/analytics/get-recent-users', {
-            headers: { 'Authorization': 'Bearer ' + token }
-          })
-          .then(res => res.json())
-          .then(users => {
-            const table = document.getElementById('recently-registered-users-table');
-            const tbody = table.querySelector('tbody');
-            tbody.innerHTML = '';
-            if (Array.isArray(users) && users.length > 0) {
-              users.forEach(user => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                  <td>${user.id}</td>
-                  <td>${user.username}</td>
-                  <td>${user.email}</td>
-                  <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : ''}</td>
-                  <td>${user.active ? 'Yes' : 'No'}</td>
-                  <td>
-                    <button onclick="toggleUserActive(${user.id}, ${user.active})">
-                      ${user.active ? 'Deactivate' : 'Activate'}
-                    </button>
-                  </td>
-                `;
-                tbody.appendChild(row);
-              });
-              table.style.display = 'table';
-            } else {
-              tbody.innerHTML = '<tr><td colspan="6">No users found.</td></tr>';
-              table.style.display = 'table';
-            }
-          });
-
         }
         document.body.style.display = 'block';
       })
       .catch(() => {
         window.location.href = '/login.html';
       });
+
+      //Load recently registered users
+      loadRecentUsers();
+
     });
 
 
 
+
+    function loadRecentUsers() {
+      fetch('/api/analytics/get-recent-users', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(res => res.json())
+      .then(users => {
+        const table = document.getElementById('recently-registered-users-table');
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
+        if (Array.isArray(users) && users.length > 0) {
+          users.forEach(user => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${user.id}</td>
+              <td>${user.username}</td>
+              <td>${user.email}</td>
+              <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : ''}</td>
+              <td>${user.active ? 'Yes' : 'No'}</td>
+              <td>
+                <button onclick="toggleUserActive(${user.id}, ${user.active})">
+                  ${user.active ? 'Deactivate' : 'Activate'}
+                </button>
+              </td>
+            `;
+            tbody.appendChild(row);
+          });
+          table.style.display = 'table';
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6">No users found.</td></tr>';
+          table.style.display = 'table';
+        }
+      });
+    }
 
     function toggleUserActive(userId, isActive) {
       const token = localStorage.getItem('jwtToken');
@@ -137,7 +143,7 @@
       })
       .then(res => {
         if (res.ok) {
-          location.reload();
+          loadRecentUsers();
         } else {
           alert('Failed to update user status.');
         }
