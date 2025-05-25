@@ -47,6 +47,17 @@ public class UserController {
         this.jwtService = jwtService;
     }
 
+    @PostMapping("/toggle-active/{id}")
+    public ResponseEntity<?> toggleActive(@RequestHeader("Authorization") String authHeader, @PathVariable Long id, @RequestParam boolean isActive){
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "No bearer token found"));
+        }
+
+        return userService.toggleActive(id, isActive);
+
+    }
+
     @GetMapping("/get-user-roles")
     public ResponseEntity<?> getUserRoles(@RequestHeader("Authorization") String authHeader){
 
@@ -73,6 +84,10 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<?> getUserProfile(@RequestHeader("Authorization") String authHeader){
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "No bearer token found"));
+        }
 
         String token = authHeader.substring(7);
         String username = jwtService.extractUsername(token);

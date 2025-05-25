@@ -58,6 +58,8 @@
 
           // Display admin panel content, do fetches here, etc.
 
+          // Fetch top URLs
+
           fetch('/api/analytics/top-urls', {
             headers: { 'Authorization': 'Bearer ' + token }
           })
@@ -78,6 +80,41 @@
               table.style.display = 'table';
             }
           });
+
+          //Fetch recent users
+
+          fetch('/api/analytics/get-recent-users', {
+            headers: { 'Authorization': 'Bearer ' + token }
+          })
+          .then(res => res.json())
+          .then(users => {
+            const table = document.getElementById('recently-registered-users-table');
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            if (Array.isArray(users) && users.length > 0) {
+              users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                  <td>${user.id}</td>
+                  <td>${user.username}</td>
+                  <td>${user.email}</td>
+                  <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : ''}</td>
+                  <td>${user.active ? 'Yes' : 'No'}</td>
+                  <td>
+                    <button onclick="toggleUserActive(${user.id}, ${user.active})">
+                      ${user.active ? 'Deactivate' : 'Activate'}
+                    </button>
+                  </td>
+                `;
+                tbody.appendChild(row);
+              });
+              table.style.display = 'table';
+            } else {
+              tbody.innerHTML = '<tr><td colspan="6">No users found.</td></tr>';
+              table.style.display = 'table';
+            }
+          });
+
         }
         document.body.style.display = 'block';
       })
@@ -85,6 +122,28 @@
         window.location.href = '/login.html';
       });
     });
+
+
+
+
+    function toggleUserActive(userId, isActive) {
+      const token = localStorage.getItem('jwtToken');
+      fetch(`/api/users/toggle-active/${userId}?isActive=${!isActive}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => {
+        if (res.ok) {
+          location.reload();
+        } else {
+          alert('Failed to update user status.');
+        }
+      });
+    }
+
   </script>
 </head>
 <body>
@@ -102,6 +161,22 @@
     </thead>
     <tbody></tbody>
   </table>
+
+  <h2>Recently Registered Users</h2>
+  <table id="recently-registered-users-table" class="centered-table" style="margin-top:20px; display:none;">
+    <thead>
+    <tr>
+      <th>User ID</th>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Created At</th>
+      <th>Active</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
 </div>
 </body>
 </html>

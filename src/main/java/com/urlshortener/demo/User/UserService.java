@@ -27,6 +27,21 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public ResponseEntity<?> toggleActive(Long id, boolean isActive) {
+
+        logger.info("Toggling active status for user with ID: " + id);
+
+        User user = userRepository.findById(id).orElse(null);
+        if (user != null) {
+            user.setActive(isActive);
+            userRepository.save(user);
+            return ResponseEntity.ok().body(Map.of("message", "User active status updated successfully"));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("message", "User not found"));
+        }
+
+    }
+
     public ResponseEntity<?> updateLastLoginTime(String username) {
 
         logger.info("Updating last login time for user: " + username);
