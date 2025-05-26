@@ -11,6 +11,7 @@
     }
     #admin-content {
       text-align: center;
+      padding-bottom: 60px;
     }
     .centered-table {
       margin: 20px auto;
@@ -31,9 +32,33 @@
     .centered-table tr:nth-child(even) {
       background: #f0f4f8;
     }
+    #role-result table {
+      margin: 10px 0 0 0;
+      border-collapse: collapse;
+      width: 100%;
+      background: #fafbfc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    #role-result th, #role-result td {
+      border: 1px solid #d1d5da;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    #role-result th {
+      background: #f6f8fa;
+      font-weight: bold;
+    }
+    #role-result tr:nth-child(even) {
+      background: #f0f4f8;
+    }
   </style>
   <script>
     let token;
+
+    let lastRoleUserId = null;
+    let lastRoleUsername = '';
+    let lastRoleRoles = [];
+    let allUsers = [];
 
     document.addEventListener('DOMContentLoaded', function() {
       token = localStorage.getItem('jwtToken');
@@ -96,11 +121,6 @@
     });
 
 
-
-
-
-    // Store loaded users for filtering
-    let allUsers = [];
 
     function loadUsers() {
       fetch('/api/analytics/get-registered-users', {
@@ -204,6 +224,90 @@
       }
     }
 
+    function searchUserRoles() {
+      const userId = document.getElementById('role-user-id').value.trim();
+      const resultDiv = document.getElementById('role-result');
+      resultDiv.innerHTML = '';
+      if (!userId) {
+        resultDiv.textContent = 'Please enter a user ID.';
+        return;
+      }
+      fetch(`/api/users/roles/${userId}`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('User not found');
+        return res.json();
+      })
+      .then(data => {
+        lastRoleUserId = userId;
+        lastRoleUsername = data.username || '';
+        lastRoleRoles = data.roles || [];
+        renderRoleTable();
+      })
+      .catch(() => {
+        resultDiv.textContent = 'User not found or error fetching roles.';
+      });
+    }
+
+    function toggleUserRole(userId, role, add) {
+      fetch(`/api/users/roles/${userId}`, {
+        method: add ? 'POST' : 'DELETE',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ role })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to update role');
+        // Update local roles array
+        if (add) {
+          if (!lastRoleRoles.includes(role)) lastRoleRoles.push(role);
+        } else {
+          lastRoleRoles = lastRoleRoles.filter(r => r !== role);
+        }
+        updateRoleRow(role);
+      })
+      .catch(() => {
+        alert('Failed to update role.');
+      });
+    }
+
+    function updateRoleRow(role) {
+      const hasRole = lastRoleRoles.includes(role);
+      const row = document.getElementById(`role-row-${role}`);
+      if (row) {
+        row.cells[1].textContent = hasRole ? 'Active' : 'Inactive';
+        row.cells[2].innerHTML = `
+          <button onclick="toggleUserRole('${lastRoleUserId}', '${role}', ${!hasRole})">
+            ${hasRole ? 'Remove' : 'Add'}
+          </button>
+        `;
+      }
+    }
+
+    function renderRoleTable() {
+      const resultDiv = document.getElementById('role-result');
+      const allRoles = ['ADMIN', 'USER'];
+      let html = `<div style="text-align:center;"><strong>Username:</strong> ${lastRoleUsername}</div>`;
+      html += '<table style="margin-top:10px;"><tr><th>Role</th><th>Status</th><th>Action</th></tr>';
+      allRoles.forEach(role => {
+        const hasRole = lastRoleRoles.includes(role);
+        html += `<tr id="role-row-${role}">
+          <td>${role}</td>
+          <td>${hasRole ? 'Active' : 'Inactive'}</td>
+          <td>
+            <button onclick="toggleUserRole('${lastRoleUserId}', '${role}', ${!hasRole})">
+              ${hasRole ? 'Remove' : 'Add'}
+            </button>
+          </td>
+        </tr>`;
+      });
+      html += '</table>';
+      resultDiv.innerHTML = html;
+    }
+
   </script>
 </head>
 <body>
@@ -250,6 +354,16 @@
     </thead>
     <tbody></tbody>
   </table>
+
+  <h2 style="text-align: center; margin-top: 40px;">Role Management</h2>
+  <div style="display: flex; justify-content: center;">
+    <div id="role-management" style="max-width: 400px; min-width: 340px; text-align: center;">
+      <label for="role-user-id" style="display:inline-block; min-width:70px;">User ID:</label>
+      <input type="text" id="role-user-id" style="width: 80px;">
+      <button onclick="searchUserRoles()">Search</button>
+      <div id="role-result" style="margin-top: 16px;"></div>
+    </div>
+  </div>
 
 </div>
 </body>

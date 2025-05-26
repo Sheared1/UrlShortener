@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/users")
@@ -45,6 +46,81 @@ public class UserController {
         this.emailService = emailService;
         this.passwordResetService = passwordResetService;
         this.jwtService = jwtService;
+    }
+
+    @GetMapping("/roles/{userId}")
+    public ResponseEntity<?> getUserRoles(@PathVariable Long userId){
+
+        User user = userService.findById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+        }
+
+        Map<String, Object> response = Map.of(
+                "username", user.getUsername(),
+                "roles", user.getRoles()
+        );
+
+        return ResponseEntity.ok(response);
+
+    }
+
+    @PostMapping("/roles/{userId}")
+    public ResponseEntity<?> updateUserRoles(@PathVariable Long userId, @RequestBody Map<String, String> roleMap){
+
+        //Add a role to a user:
+
+        String role = roleMap.get("role");
+
+        User user = userService.findById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+        }
+
+        Set<String> roles = user.getRoles();
+        roles.add(role);
+        user.setRoles(roles);
+
+        userService.saveUser(user);
+
+        Map<String, Object> response = Map.of(
+                "username", user.getUsername(),
+                "roles", user.getRoles()
+        );
+
+        return ResponseEntity.ok(response);
+
+    }
+
+    @DeleteMapping("/roles/{userId}")
+    public ResponseEntity<?> deleteUserRole(@PathVariable Long userId, @RequestBody Map<String, String> roleMap){
+
+        //Remove a role from a user:
+
+        String role = roleMap.get("role");
+
+        User user = userService.findById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User not found"));
+        }
+
+        Set<String> roles = user.getRoles();
+        if (roles.contains(role)) {
+            roles.remove(role);
+            user.setRoles(roles);
+
+            userService.saveUser(user);
+        } else {
+            return ResponseEntity.badRequest().body(Map.of("message", "Role not found for the user"));
+        }
+
+        Map<String, Object> response = Map.of(
+                "username", user.getUsername(),
+                "roles", user.getRoles()
+        );
+
+        return ResponseEntity.ok(response);
+
     }
 
     @PostMapping("/toggle-active/{id}")

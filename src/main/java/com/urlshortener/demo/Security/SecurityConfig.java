@@ -39,6 +39,7 @@ public class SecurityConfig {
                                 //Secured endpoints here
                                 .requestMatchers("/api/analytics/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/api/users/delete").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/api/users/roles/**").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/myurls.html").hasAuthority("ROLE_USER")
                                 .requestMatchers("/api/urls/user/**").hasAuthority("ROLE_USER")
 
