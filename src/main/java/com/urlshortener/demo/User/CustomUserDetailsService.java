@@ -1,5 +1,6 @@
 package com.urlshortener.demo.User;
 
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,8 +24,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         User user = userRepository.findByUsername(username);
+
         if (user == null){
             throw new UsernameNotFoundException("Username not found: " + username);
+        }
+        if (!user.isActive()){
+            throw new LockedException("User account is locked: " + username);
         }
 
         //Below handles our "roles" in db and puts them into SimpleGrantedAuthority objects.
@@ -39,10 +44,10 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .withUsername(user.getUsername())
                 .password(user.getPassword())
                 .authorities(authorities)
-                .accountExpired(!user.isActive())
+                .accountExpired(false)
                 .accountLocked(!user.isActive())
-                .credentialsExpired(!user.isActive())
-                .disabled(!user.isActive())
+                .credentialsExpired(false)
+                .disabled(false)
                 .build();
 
     }

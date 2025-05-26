@@ -99,7 +99,7 @@
 
 
     function loadUsers() {
-      fetch('/api/analytics/get-recent-users', {
+      fetch('/api/analytics/get-registered-users', {
         headers: { 'Authorization': 'Bearer ' + token }
       })
       .then(res => res.json())
@@ -143,7 +143,7 @@
       })
       .then(res => {
         if (res.ok) {
-          loadRecentUsers();
+          loadUsers();
         } else {
           alert('Failed to update user status.');
         }

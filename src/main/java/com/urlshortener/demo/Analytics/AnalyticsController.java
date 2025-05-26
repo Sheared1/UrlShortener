@@ -41,17 +41,17 @@ public class AnalyticsController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("/get-recent-users")
-    public ResponseEntity<?> getRecentUsers(){
+    @GetMapping("/get-registered-users")
+    public ResponseEntity<?> getRegisteredUsers(){
 
-        //Get the most recent 10 users who created an account (by createdAt).
-        List<User> recentUsers = userRepository.findTop10ByOrderByCreatedAtDesc();
+        //Get the most recent 10 users who created an account (by createdAt) by default.
+        List<User> registeredUsers = userRepository.findTop10ByOrderByCreatedAtDesc();
 
-        if (recentUsers.isEmpty()){
+        if (registeredUsers.isEmpty()){
             return ResponseEntity.ok("No users found.");
         }
 
-        return ResponseEntity.ok(recentUsers);
+        return ResponseEntity.ok(registeredUsers);
 
     }
 
