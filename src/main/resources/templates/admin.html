@@ -98,38 +98,70 @@
 
 
 
+
+    // Store loaded users for filtering
+    let allUsers = [];
+
     function loadUsers() {
       fetch('/api/analytics/get-registered-users', {
         headers: { 'Authorization': 'Bearer ' + token }
       })
       .then(res => res.json())
       .then(users => {
-        const table = document.getElementById('registered-users-table');
-        const tbody = table.querySelector('tbody');
-        tbody.innerHTML = '';
-        if (Array.isArray(users) && users.length > 0) {
-          users.forEach(user => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${user.id}</td>
-              <td>${user.username}</td>
-              <td>${user.email}</td>
-              <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : ''}</td>
-              <td>${user.active ? 'Yes' : 'No'}</td>
-              <td>
-                <button onclick="toggleUserActive(${user.id}, ${user.active})">
-                  ${user.active ? 'Deactivate' : 'Activate'}
-                </button>
-              </td>
-            `;
-            tbody.appendChild(row);
-          });
-          table.style.display = 'table';
-        } else {
-          tbody.innerHTML = '<tr><td colspan="6">No users found.</td></tr>';
-          table.style.display = 'table';
-        }
+        allUsers = Array.isArray(users) ? users : [];
+        renderUsersTable(allUsers);
       });
+    }
+
+    function renderUsersTable(users) {
+      const table = document.getElementById('registered-users-table');
+      const tbody = table.querySelector('tbody');
+      tbody.innerHTML = '';
+      if (users.length > 0) {
+        users.forEach(user => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.username}</td>
+            <td>${user.email}</td>
+            <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : ''}</td>
+            <td>${user.active ? 'Yes' : 'No'}</td>
+            <td>
+              <button onclick="toggleUserActive(${user.id}, ${user.active})">
+                ${user.active ? 'Deactivate' : 'Activate'}
+              </button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+        table.style.display = 'table';
+      } else {
+        tbody.innerHTML = '<tr><td colspan="6">No users found.</td></tr>';
+        table.style.display = 'table';
+      }
+    }
+
+    function filterUsersTable() {
+      const table = document.getElementById('registered-users-table');
+      const filters = [
+        table.tHead.rows[0].cells[0].querySelector('input').value.trim().toLowerCase(),
+        table.tHead.rows[0].cells[1].querySelector('input').value.trim().toLowerCase(),
+        table.tHead.rows[0].cells[2].querySelector('input').value.trim().toLowerCase(),
+        table.tHead.rows[0].cells[3].querySelector('input').value.trim().toLowerCase(),
+        table.tHead.rows[0].cells[4].querySelector('select').value
+      ];
+
+      const filtered = allUsers.filter(user => {
+        return (
+          (filters[0] === '' || String(user.id).toLowerCase().includes(filters[0])) &&
+          (filters[1] === '' || (user.username || '').toLowerCase().includes(filters[1])) &&
+          (filters[2] === '' || (user.email || '').toLowerCase().includes(filters[2])) &&
+          (filters[3] === '' || (user.createdAt ? new Date(user.createdAt).toLocaleString().toLowerCase().includes(filters[3]) : false)) &&
+          (filters[4] === '' || (user.active ? 'Yes' : 'No') === filters[4])
+        );
+      });
+
+      renderUsersTable(filtered);
     }
 
     function toggleUserActive(userId, isActive) {
@@ -143,11 +175,33 @@
       })
       .then(res => {
         if (res.ok) {
-          loadUsers();
+          // Update user in allUsers array
+          const user = allUsers.find(u => u.id === userId);
+          if (user) {
+            user.active = !isActive;
+            updateUserRow(user);
+          }
         } else {
           alert('Failed to update user status.');
         }
       });
+    }
+
+    function updateUserRow(user) {
+      const table = document.getElementById('registered-users-table');
+      const tbody = table.querySelector('tbody');
+      // Find the row by user ID (assumes ID is in the first cell)
+      for (let row of tbody.rows) {
+        if (row.cells[0].textContent == user.id) {
+          row.cells[4].textContent = user.active ? 'Yes' : 'No';
+          row.cells[5].innerHTML = `
+            <button onclick="toggleUserActive(${user.id}, ${user.active})">
+              ${user.active ? 'Deactivate' : 'Activate'}
+            </button>
+          `;
+          break;
+        }
+      }
     }
 
   </script>
@@ -171,6 +225,20 @@
   <h2>Registered Users</h2>
   <table id="registered-users-table" class="centered-table" style="margin-top:20px; display:none;">
     <thead>
+    <tr>
+      <th><input type="text" placeholder="Filter ID" oninput="filterUsersTable()"></th>
+      <th><input type="text" placeholder="Filter Username" oninput="filterUsersTable()"></th>
+      <th><input type="text" placeholder="Filter Email" oninput="filterUsersTable()"></th>
+      <th><input type="text" placeholder="Filter Created At" oninput="filterUsersTable()"></th>
+      <th>
+        <select onchange="filterUsersTable()">
+          <option value="">All</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </th>
+      <th><!-- No filter for Action --></th>
+    </tr>
     <tr>
       <th>User ID</th>
       <th>Username</th>
