@@ -137,8 +137,12 @@ public class ShortenedUrlService {
     @Async
     @Transactional
     public void incrementClickCount(ShortenedUrl shortenedUrl) {
-        shortenedUrl.setClickCount(shortenedUrl.getClickCount() + 1);
-        shortenedUrlRepository.save(shortenedUrl);
+        // Fetch the entity again to ensure it is managed
+        ShortenedUrl managedUrl = shortenedUrlRepository.getShortenedUrlByShortCode(shortenedUrl.getShortCode());
+        if (managedUrl != null) {
+            managedUrl.setClickCount(managedUrl.getClickCount() + 1);
+            shortenedUrlRepository.save(managedUrl);
+        }
     }
 
     @Transactional
@@ -229,6 +233,6 @@ public class ShortenedUrlService {
     }
 
     public List<ShortenedUrl> getShortenedUrlsForUser(String username) {
-        return shortenedUrlRepository.findByCreatedBy(username);
+        return shortenedUrlRepository.findByCreatedByOrderByCreatedAtDesc(username);
     }
 }

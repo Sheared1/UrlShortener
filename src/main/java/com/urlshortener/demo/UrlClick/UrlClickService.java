@@ -20,15 +20,15 @@ public class UrlClickService {
 
     @Async //Async method to not block request, it is not important, just to collect information.
     @Transactional
-    public void recordClick(long id, HttpServletRequest request) {
+    public void recordClick(long id, HttpServletRequest request, String ipAddress, String referer, String userAgent) {
 
         UrlClick urlClick = new UrlClick();
 
         urlClick.setClickedAt(LocalDateTime.now());
         urlClick.setShortUrlId(id);
-        urlClick.setIpAddress(request.getRemoteAddr()); //Gets IP address from request.
-        urlClick.setReferrer(request.getHeader("referer")); //Optional header, indicates URL of the web page from which a request was initiated.
-        urlClick.setUserAgent(request.getHeader("User-Agent")); //Optional header, indicates software making the request (browser, OS, version...).
+        urlClick.setIpAddress(ipAddress); //Gets IP address from request.
+        urlClick.setReferrer(referer); //Optional header, indicates URL of the web page from which a request was initiated.
+        urlClick.setUserAgent(userAgent); //Optional header, indicates software making the request (browser, OS, version...).
 
         urlClickRepository.save(urlClick);
 

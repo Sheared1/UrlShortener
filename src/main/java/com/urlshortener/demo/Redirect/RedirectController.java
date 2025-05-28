@@ -41,7 +41,12 @@ public class RedirectController {
 
         shortenedUrlService.incrementClickCount(shortenedUrl); //Async
 
-        urlClickService.recordClick(shortenedUrl.getId(), request); //Async
+        //Below variables will result in an error if in an async context, so we get it here.
+        String ipAddress = request.getRemoteAddr();
+        String referer = request.getHeader("referer");
+        String userAgent = request.getHeader("User-Agent");
+
+        urlClickService.recordClick(shortenedUrl.getId(), request, ipAddress, referer, userAgent); //Async
 
 
         return "redirect:" + shortenedUrl.getOriginalUrl();

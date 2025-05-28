@@ -43,7 +43,8 @@ public class SecurityConfig {
                                 .requestMatchers("/myurls.html").hasAuthority("ROLE_USER")
                                 .requestMatchers("/api/urls/user/**").hasAuthority("ROLE_USER")
 
-                                //Public endpoints here:
+                                //Public endpoints here:")
+                                .requestMatchers("/api/urls/app-url").permitAll()
                                 .requestMatchers("/").permitAll()                      // Allow access to root path
                                 .requestMatchers("/r/**").permitAll()
                                 .requestMatchers("/index.html").permitAll()           // Allow access to index.html

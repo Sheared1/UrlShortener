@@ -61,6 +61,8 @@
     let lastRoleRoles = [];
     let allUsers = [];
 
+    let appUrl = '';
+
     document.addEventListener('DOMContentLoaded', function() {
       token = localStorage.getItem('jwtToken');
       if (!token) {
@@ -87,26 +89,11 @@
           // Display admin panel content, do fetches here, etc.
 
           // Fetch top URLs
-
-          fetch('/api/analytics/top-urls', {
-            headers: { 'Authorization': 'Bearer ' + token }
-          })
+          fetch('/api/urls/app-url')
           .then(res => res.json())
-          .then(urls => {
-            const table = document.getElementById('top-urls-table');
-            const tbody = table.querySelector('tbody');
-            tbody.innerHTML = '';
-            if (Array.isArray(urls) && urls.length > 0) {
-              urls.forEach(url => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${url.shortCode || url.shortUrl}</td><td>${url.originalUrl}</td><td>${url.clickCount}</td>`;
-                tbody.appendChild(row);
-              });
-              table.style.display = 'table';
-            } else {
-              tbody.innerHTML = '<tr><td colspan="3">No URL clicks found.</td></tr>';
-              table.style.display = 'table';
-            }
+          .then(data => {
+            appUrl = data.appUrl || 'http://localhost:8080';
+            loadTopUrls();
           });
 
         }
@@ -125,6 +112,31 @@
     let currentPage = 0;
     let pageSize = 10;
     let totalPages = 5;
+
+    function loadTopUrls() {
+      fetch('/api/analytics/top-urls', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(res => res.json())
+      .then(urls => {
+        const table = document.getElementById('top-urls-table');
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = '';
+        if (Array.isArray(urls) && urls.length > 0) {
+          urls.forEach(url => {
+            const shortCode = url.shortCode || url.shortUrl;
+            const shortLink = `${appUrl}/r/${shortCode}`;
+            const row = document.createElement('tr');
+            row.innerHTML = `<td><a href="${shortLink}" target="_blank">${shortCode}</a></td><td>${url.originalUrl}</td><td>${url.clickCount}</td>`;
+            tbody.appendChild(row);
+          });
+          table.style.display = 'table';
+        } else {
+          tbody.innerHTML = '<tr><td colspan="3">No URL clicks found.</td></tr>';
+          table.style.display = 'table';
+        }
+      });
+    }
 
     function loadUsers(page = 0) {
       fetch(`/api/users/get-registered-users?page=${page}&size=${pageSize}`, {

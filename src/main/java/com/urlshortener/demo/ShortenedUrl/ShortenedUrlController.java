@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.coyote.Response;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,14 @@ public class ShortenedUrlController {
         this.shortenedUrlService = shortenedUrlService;
         this.redisRateLimitService = redisRateLimitService;
         this.jwtService = jwtService;
+    }
+
+    @Value("${app.url}")
+    private String appUrl;
+
+    @GetMapping("/app-url")
+    public Map<String, String> getAppUrl() {
+        return Map.of("appUrl", appUrl);
     }
 
     @GetMapping("/qr/{shortCode}")
