@@ -150,6 +150,9 @@
               <button onclick="toggleUserActive(${user.id}, ${user.active})">
                 ${user.active ? 'Deactivate' : 'Activate'}
               </button>
+              <button onclick="deleteUser(${user.id}, '${user.username.replace(/'/g, "\\'")}')">
+                Delete
+              </button>
             </td>
           `;
           tbody.appendChild(row);
@@ -159,6 +162,25 @@
         tbody.innerHTML = '<tr><td colspan="6">No users found.</td></tr>';
         table.style.display = 'table';
       }
+    }
+
+    function deleteUser(userId, username) {
+      if (!confirm(`Are you sure you want to delete user "${username}" (ID: ${userId})? This action cannot be undone.`)) {
+        return;
+      }
+      fetch(`/api/users/delete/${userId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(res => {
+        if (res.ok) {
+          // Remove user from allUsers and update table
+          allUsers = allUsers.filter(u => u.id !== userId);
+          renderUsersTable(allUsers);
+        } else {
+          alert('Failed to delete user.');
+        }
+      });
     }
 
     function filterUsersTable() {
