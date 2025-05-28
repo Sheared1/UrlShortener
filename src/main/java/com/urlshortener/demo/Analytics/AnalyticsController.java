@@ -41,20 +41,6 @@ public class AnalyticsController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("/get-registered-users")
-    public ResponseEntity<?> getRegisteredUsers(){
-
-        //Get the most recent 10 users who created an account (by createdAt) by default.
-        List<User> registeredUsers = userRepository.findTop10ByOrderByCreatedAtDesc();
-
-        if (registeredUsers.isEmpty()){
-            return ResponseEntity.ok("No users found.");
-        }
-
-        return ResponseEntity.ok(registeredUsers);
-
-    }
-
     @GetMapping("/top-urls")
     public ResponseEntity<?> getTopUrls() { //Gets top 10 urls by click count.
 

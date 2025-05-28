@@ -3,6 +3,8 @@ package com.urlshortener.demo.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,11 @@ public class UserService {
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    public Page<User> findAllByOrderByCreatedAtDesc(Pageable pageable) {
+        logger.info("Fetching all users ordered by creation date");
+        return userRepository.findAllByOrderByCreatedAtDesc(pageable);
     }
 
     public ResponseEntity<?> toggleActive(Long id, boolean isActive) {
