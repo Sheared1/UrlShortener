@@ -143,22 +143,23 @@
     }
 
     function loadUrlsCreatedBarChart() {
-      fetch('/api/analytics/urls/past-week', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      })
-      .then(res => res.json())
-      .then(data => {
-        // Ensure all 7 days are present, fill missing days with 0
+      Promise.all([
+        fetch('/api/analytics/urls/created-past-week', { headers: { 'Authorization': 'Bearer ' + token } }).then(res => res.json()),
+        fetch('/api/analytics/urls/clicked-past-week', { headers: { 'Authorization': 'Bearer ' + token } }).then(res => res.json())
+      ]).then(([createdData, clickedData]) => {
         const today = new Date();
         const labels = [];
-        const counts = [];
+        const createdCounts = [];
+        const clickedCounts = [];
         for (let i = 6; i >= 0; i--) {
           const d = new Date(today);
           d.setDate(today.getDate() - i);
           const label = d.toISOString().slice(0, 10);
           labels.push(label);
-          const found = data.find(item => item.date.startsWith(label));
-          counts.push(found ? found.count : 0);
+          const created = createdData.find(item => item.date.startsWith(label));
+          const clicked = clickedData.find(item => item.date.startsWith(label));
+          createdCounts.push(created ? created.count : 0);
+          clickedCounts.push(clicked ? clicked.count : 0);
         }
 
         const ctx = document.getElementById('urls-created-bar').getContext('2d');
@@ -166,18 +167,25 @@
           type: 'bar',
           data: {
             labels: labels,
-            datasets: [{
-              label: 'URLs Created',
-              data: counts,
-              backgroundColor: 'rgba(54, 162, 235, 0.7)'
-            }]
+            datasets: [
+              {
+                label: 'URLs Created',
+                data: createdCounts,
+                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+              },
+              {
+                label: 'URLs Clicked',
+                data: clickedCounts,
+                backgroundColor: 'rgba(255, 99, 132, 0.7)'
+              }
+            ]
           },
           options: {
             plugins: {
               tooltip: {
                 callbacks: {
                   label: function(context) {
-                    return `URLs Created: ${context.parsed.y}`;
+                    return `${context.dataset.label}: ${context.parsed.y}`;
                   }
                 }
               }
