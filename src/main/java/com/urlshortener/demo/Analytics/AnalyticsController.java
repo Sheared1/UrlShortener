@@ -45,8 +45,24 @@ public class AnalyticsController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("/urls/past-week")
-    public ResponseEntity<?> getAllShortenedUrlsForPastSevenDays() {
+    @GetMapping("/urls/clicked-past-week")
+    public ResponseEntity<?> getAllShortenedUrlsClickedPastSevenDays() {
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(6).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        List<Object[]> results = urlClickRepository.countUrlsClickedByDay(sevenDaysAgo);
+
+        // Format result as a list of date/count pairs
+        List<Map<String, Object>> response = results.stream().map(obj -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("date", obj[0].toString());
+            map.put("count", ((Number) obj[1]).intValue());
+            return map;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/urls/created-past-week")
+    public ResponseEntity<?> getAllShortenedUrlsCreatedPastSevenDays() {
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(6).withHour(0).withMinute(0).withSecond(0).withNano(0);
         List<Object[]> results = shortenedUrlRepository.countUrlsCreatedByDay(sevenDaysAgo);
 
