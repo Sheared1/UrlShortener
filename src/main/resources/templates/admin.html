@@ -3,6 +3,7 @@
 <head>
   <title>Admin</title>
   <script src="common.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- For URL bar chart -->
   <style>
     body { display: none; }
 
@@ -106,6 +107,9 @@
       //Load registered users
       loadUsers();
 
+      //Load URLs created bar chart
+      loadUrlsCreatedBarChart();
+
     });
 
 
@@ -135,6 +139,54 @@
           tbody.innerHTML = '<tr><td colspan="3">No URL clicks found.</td></tr>';
           table.style.display = 'table';
         }
+      });
+    }
+
+    function loadUrlsCreatedBarChart() {
+      fetch('/api/analytics/urls/past-week', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(res => res.json())
+      .then(data => {
+        // Ensure all 7 days are present, fill missing days with 0
+        const today = new Date();
+        const labels = [];
+        const counts = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(today);
+          d.setDate(today.getDate() - i);
+          const label = d.toISOString().slice(0, 10);
+          labels.push(label);
+          const found = data.find(item => item.date.startsWith(label));
+          counts.push(found ? found.count : 0);
+        }
+
+        const ctx = document.getElementById('urls-created-bar').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'URLs Created',
+              data: counts,
+              backgroundColor: 'rgba(54, 162, 235, 0.7)'
+            }]
+          },
+          options: {
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `URLs Created: ${context.parsed.y}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: { beginAtZero: true, precision: 0 }
+            }
+          }
+        });
       });
     }
 
@@ -379,17 +431,15 @@
 
 
 
-  <h2>Top URLs (Click Count)</h2>
-  <table id="top-urls-table" class="centered-table" style="margin-top:20px; display:none;">
-    <thead>
-    <tr>
-      <th>Short URL</th>
-      <th>Original URL</th>
-      <th>Click Count</th>
-    </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <h2>Role Management</h2>
+  <div style="display: flex; justify-content: center;">
+    <div id="role-management" style="max-width: 400px; min-width: 340px; text-align: center;">
+      <label for="role-user-id" style="display:inline-block; min-width:70px;">User ID:</label>
+      <input type="text" id="role-user-id" style="width: 80px;">
+      <button onclick="searchUserRoles()">Search</button>
+      <div id="role-result" style="margin-top: 16px;"></div>
+    </div>
+  </div>
 
 
 
@@ -425,15 +475,24 @@
 
 
 
-  <h2 style="text-align: center; margin-top: 40px;">Role Management</h2>
-  <div style="display: flex; justify-content: center;">
-    <div id="role-management" style="max-width: 400px; min-width: 340px; text-align: center;">
-      <label for="role-user-id" style="display:inline-block; min-width:70px;">User ID:</label>
-      <input type="text" id="role-user-id" style="width: 80px;">
-      <button onclick="searchUserRoles()">Search</button>
-      <div id="role-result" style="margin-top: 16px;"></div>
-    </div>
-  </div>
+  <h2>Top URLs (Click Count)</h2>
+  <table id="top-urls-table" class="centered-table" style="margin-top:20px; display:none;">
+    <thead>
+    <tr>
+      <th>Short URL</th>
+      <th>Original URL</th>
+      <th>Click Count</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+
+
+  <h2>Shortened URLs Created (Past 7 Days)</h2>
+  <canvas id="urls-created-bar" width="600" height="300"></canvas>
+
+
 
 </div>
 </body>
