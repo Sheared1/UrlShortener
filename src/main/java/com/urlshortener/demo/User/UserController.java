@@ -13,10 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,23 +55,27 @@ public class UserController {
     }
 
     @GetMapping("/get-registered-users")
-    public ResponseEntity<?> getRegisteredUsers(@RequestParam(defaultValue = "0") int page,
-                                                @RequestParam(defaultValue = "10") int size){
-
-        Pageable pageable = PageRequest.of(page, size);
-        Page<User> registeredUsers = userService.findAllByOrderByCreatedAtDesc(pageable);
-
-        if (registeredUsers.isEmpty()){
-            return ResponseEntity.ok("No users found.");
-        }
-
-        return ResponseEntity.ok(Map.of(
-                "users", registeredUsers.getContent(),
-                "totalPages", registeredUsers.getTotalPages(),
-                "totalElements", registeredUsers.getTotalElements(),
-                "currentPage", registeredUsers.getNumber()
-        ));
-
+    public ResponseEntity<?> getRegisteredUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String id,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String createdAt,
+            @RequestParam(required = false) String active,
+            @RequestParam(required = false) String sort
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        // If sort param is present, parse and use it
+        // Build Specification for filters
+        Page<User> usersPage = userService.findWithFilters(id, username, email, createdAt, active, pageable);
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", usersPage.getContent());
+        response.put("totalPages", usersPage.getTotalPages());
+        response.put("number", usersPage.getNumber());
+        response.put("totalElements", usersPage.getTotalElements());
+        response.put("size", usersPage.getSize());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/roles/{userId}")

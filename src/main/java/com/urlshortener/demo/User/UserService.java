@@ -4,7 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,9 +32,43 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Page<User> findAllByOrderByCreatedAtDesc(Pageable pageable) {
-        logger.info("Fetching all users ordered by creation date");
-        return userRepository.findAllByOrderByCreatedAtDesc(pageable);
+    public Page<User> findWithFilters(
+            String id,
+            String username,
+            String email,
+            String createdAt,
+            String active,
+            Pageable pageable
+    ) {
+        Specification<User> spec = Specification.where(null);
+
+        if (id != null && !id.isEmpty()) {
+            try {
+                Long userId = Long.parseLong(id);
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("id"), userId));
+            } catch (NumberFormatException ignored) {}
+        }
+        if (username != null && !username.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("username")), "%" + username.toLowerCase() + "%"));
+        }
+        if (email != null && !email.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%"));
+        }
+        if (createdAt != null && !createdAt.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.function("DATE_FORMAT", String.class, root.get("createdAt"), cb.literal("%Y-%m-%d %H:%i:%s")), "%" + createdAt + "%"));
+        }
+        if (active != null && !active.isEmpty()) {
+            if (active.equalsIgnoreCase("Yes")) {
+                spec = spec.and((root, query, cb) -> cb.isTrue(root.get("active")));
+            } else if (active.equalsIgnoreCase("No")) {
+                spec = spec.and((root, query, cb) -> cb.isFalse(root.get("active")));
+            }
+        }
+
+        // Always sort by createdAt descending
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return userRepository.findAll(spec, pageable);
     }
 
     public ResponseEntity<?> toggleActive(Long id, boolean isActive) {
