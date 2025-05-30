@@ -93,7 +93,7 @@
           fetch('/api/urls/app-url')
           .then(res => res.json())
           .then(data => {
-            appUrl = data.appUrl || 'http://localhost:8080';
+            appUrl = data.appUrl;
             loadTopUrls();
           });
 
