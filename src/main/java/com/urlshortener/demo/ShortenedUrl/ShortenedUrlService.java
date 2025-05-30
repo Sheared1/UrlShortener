@@ -14,6 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +42,40 @@ public class ShortenedUrlService {
     public ShortenedUrlService(ShortenedUrlRepository shortenedUrlRepository, JwtService jwtService) {
         this.shortenedUrlRepository = shortenedUrlRepository;
         this.jwtService = jwtService;
+    }
+
+    public Page<ShortenedUrl> findWithFilters(
+            String shortCode,
+            String originalUrl,
+            String createdBy,
+            String createdAt,
+            String clickCount,
+            Pageable pageable
+    ) {
+        Specification<ShortenedUrl> spec = Specification.where(null);
+
+        if (shortCode != null && !shortCode.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("shortCode")), "%" + shortCode.toLowerCase() + "%"));
+        }
+        if (originalUrl != null && !originalUrl.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("originalUrl")), "%" + originalUrl.toLowerCase() + "%"));
+        }
+        if (createdBy != null && !createdBy.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("createdBy")), "%" + createdBy.toLowerCase() + "%"));
+        }
+        if (createdAt != null && !createdAt.isEmpty()) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.function("DATE_FORMAT", String.class, root.get("createdAt"), cb.literal("%Y-%m-%d %H:%i:%s")), "%" + createdAt + "%"));
+        }
+        if (clickCount != null && !clickCount.isEmpty()) {
+            try {
+                int count = Integer.parseInt(clickCount);
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("clickCount"), count));
+            } catch (NumberFormatException ignored) {}
+        }
+
+        pageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return shortenedUrlRepository.findAll(spec, pageable);
     }
 
     public List<ShortenedUrl> getAllShortenedUrls(){

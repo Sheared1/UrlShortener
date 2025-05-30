@@ -51,10 +51,18 @@ public class AnalyticsController {
     @GetMapping("/urls/all")
     public ResponseEntity<?> getAllShortenedUrlsByCreationDate(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(required = false) String shortCode,
+            @RequestParam(required = false) String originalUrl,
+            @RequestParam(required = false) String createdBy,
+            @RequestParam(required = false) String createdAt,
+            @RequestParam(required = false) String clickCount
+    ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ShortenedUrl> shortenedUrlsPage = shortenedUrlRepository.findAllByOrderByCreatedAtDesc(pageable);
+
+        Page<ShortenedUrl> shortenedUrlsPage = shortenedUrlService.findWithFilters(
+                shortCode, originalUrl, createdBy, createdAt, clickCount, pageable
+        );
 
         Map<String, Object> response = new HashMap<>();
         response.put("content", shortenedUrlsPage.getContent());

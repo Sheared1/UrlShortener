@@ -111,7 +111,7 @@
       loadUrlsCreatedBarChart();
 
       //Load shortened URLs
-      loadShortenedUrls();
+      loadInitialShortenedUrls();
 
     });
 
@@ -145,23 +145,66 @@
       });
     }
 
-    let shortenedUrlsPage = 0;
-    let shortenedUrlsTotalPages = 1;
     let shortenedUrlsPageSize = 10;
+    let shortenedUrlsMaxInitialPages = 5;
+    let lastShortenedUrls = [];
+    let shortenedUrlsTotalPages = 1;
+    let shortenedUrlsPage = 0;
 
-    function loadShortenedUrls(page = 0) {
-      fetch(`/api/analytics/urls/all?page=${page}&size=${shortenedUrlsPageSize}`, {
+    function loadShortenedUrls(page = 0, filters = {}) {
+      let params = new URLSearchParams();
+      params.append('page', page);
+      params.append('size', shortenedUrlsPageSize);
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+
+      fetch(`/api/analytics/urls/all?${params.toString()}`, {
         headers: { 'Authorization': 'Bearer ' + token }
       })
       .then(res => res.json())
       .then(data => {
-        // If your backend returns a list directly, wrap it in an object for consistency
         const urls = Array.isArray(data.content) ? data.content : (Array.isArray(data) ? data : []);
-        shortenedUrlsTotalPages = data.totalPages || 1;
+        // If filters are applied, use backend totalPages; else, lock to 5
+        const filtersApplied = Object.values(filters).some(v => v && v.length > 0);
+        shortenedUrlsTotalPages = filtersApplied ? (data.totalPages || 1) : shortenedUrlsMaxInitialPages;
         shortenedUrlsPage = data.number || page;
+        lastShortenedUrls = urls;
         renderShortenedUrlsTable(urls);
         renderShortenedUrlsPagination();
       });
+    }
+
+    function loadInitialShortenedUrls() {
+      let allUrls = [];
+      let fetches = [];
+      for (let i = 0; i < shortenedUrlsMaxInitialPages; i++) {
+        fetches.push(
+          fetch(`/api/analytics/urls/all?page=${i}&size=${shortenedUrlsPageSize}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+          }).then(res => res.json())
+        );
+      }
+      Promise.all(fetches).then(results => {
+        allUrls = results.flatMap(data => Array.isArray(data.content) ? data.content : []);
+        shortenedUrlsTotalPages = shortenedUrlsMaxInitialPages;
+        shortenedUrlsPage = 0;
+        lastShortenedUrls = allUrls;
+        renderShortenedUrlsTable(allUrls.slice(0, shortenedUrlsPageSize));
+        renderShortenedUrlsPagination();
+      });
+    }
+
+    function filterShortenedUrlsTable() {
+      const table = document.getElementById('shortened-urls-table');
+      const filters = {
+        shortCode: table.tHead.rows[0].cells[0].querySelector('input').value.trim(),
+        originalUrl: table.tHead.rows[0].cells[1].querySelector('input').value.trim(),
+        createdBy: table.tHead.rows[0].cells[2].querySelector('input').value.trim(),
+        createdAt: table.tHead.rows[0].cells[3].querySelector('input').value.trim(),
+        clickCount: table.tHead.rows[0].cells[4].querySelector('input').value.trim()
+      };
+      loadShortenedUrls(0, filters);
     }
 
     function renderShortenedUrlsTable(urls) {
@@ -555,14 +598,16 @@
 
 
 
-  <h2>Shortened URLs Created (Past 7 Days)</h2>
-  <canvas id="urls-created-bar" width="600" height="300"></canvas>
-
-
-
   <h2>All Shortened URLs</h2>
   <table id="shortened-urls-table" class="centered-table" style="margin-top:20px; display:none;">
     <thead>
+    <tr>
+      <th><input type="text" placeholder="Filter Short Code" oninput="filterShortenedUrlsTable()"></th>
+      <th><input type="text" placeholder="Filter Original URL" oninput="filterShortenedUrlsTable()"></th>
+      <th><input type="text" placeholder="Filter Created By" oninput="filterShortenedUrlsTable()"></th>
+      <th><input type="text" placeholder="Filter Created At" oninput="filterShortenedUrlsTable()"></th>
+      <th><input type="text" placeholder="Filter Click Count" oninput="filterShortenedUrlsTable()"></th>
+    </tr>
     <tr>
       <th>Short Code</th>
       <th>Original URL</th>
@@ -574,6 +619,15 @@
     <tbody></tbody>
   </table>
   <div id="shortened-urls-pagination" style="text-align:center; margin: 20px 0;"></div>
+
+
+
+  <h2>Shortened URLs Created (Past 7 Days)</h2>
+  <canvas id="urls-created-bar" width="600" height="300"></canvas>
+
+
+
+
 
 
 

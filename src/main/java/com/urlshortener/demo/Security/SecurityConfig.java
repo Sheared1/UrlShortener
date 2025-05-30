@@ -43,7 +43,7 @@ public class SecurityConfig {
                                 .requestMatchers("/myurls.html").hasAuthority("ROLE_USER")
                                 .requestMatchers("/api/urls/user/**").hasAuthority("ROLE_USER")
 
-                                //Public endpoints here:")
+                                //Public endpoints here:
                                 .requestMatchers("/api/urls/app-url").permitAll()
                                 .requestMatchers("/").permitAll()                      // Allow access to root path
                                 .requestMatchers("/r/**").permitAll()
@@ -83,7 +83,7 @@ public class SecurityConfig {
 
 
                                 //Any request that doesn't match the above rules will require authentication (but no specific role):
-                                .anyRequest().authenticated()
+                                .anyRequest().authenticated()  //This will require authentication for any other request not matched above.
                                 //Could be more restrictive if desired, and do:
                                 //.anyRequest().denyAll();
                                 //Or could be more permissive and do the opposite:
