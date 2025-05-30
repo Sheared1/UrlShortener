@@ -37,11 +37,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                                 //Secured endpoints here
+                                .requestMatchers("/api/users/get-registered-users").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/api/users/toggle-active/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/api/users/delete/**").hasAuthority("ROLE_ADMIN")
+                                .requestMatchers("/api/users/get-user-roles").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/api/analytics/**").hasAuthority("ROLE_ADMIN")
-                                .requestMatchers("/api/users/delete").hasAuthority("ROLE_ADMIN")
                                 .requestMatchers("/api/users/roles/**").hasAuthority("ROLE_ADMIN")
+
                                 .requestMatchers("/myurls.html").hasAuthority("ROLE_USER")
                                 .requestMatchers("/api/urls/user/**").hasAuthority("ROLE_USER")
+
 
                                 //Public endpoints here:
                                 .requestMatchers("/api/urls/app-url").permitAll()
