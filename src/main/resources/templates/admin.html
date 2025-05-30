@@ -299,28 +299,54 @@
       });
     }
 
-    function loadUsers(page = 0) {
-      fetch(`/api/users/get-registered-users?page=${page}&size=${pageSize}`, {
+    let usersPageSize = 10;
+    let usersMaxInitialPages = 5;
+    let usersTotalPages = 1;
+    let usersPage = 0;
+    let lastUsers = [];
+
+    function loadUsers(page = 0, filters = {}, sort = 'createdAt,desc') {
+      let params = new URLSearchParams();
+      params.append('page', page);
+      params.append('size', usersPageSize);
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+
+      fetch(`/api/users/get-registered-users?${params.toString()}`, {
         headers: { 'Authorization': 'Bearer ' + token }
       })
       .then(res => res.json())
       .then(data => {
-        allUsers = Array.isArray(data.users) ? data.users : [];
-        totalPages = data.totalPages || 1;
-        currentPage = data.currentPage || 0;
-        renderUsersTable(allUsers);
-        renderPagination();
+        const users = Array.isArray(data.content) ? data.content : [];
+        usersTotalPages = Math.min(data.totalPages || 1, usersMaxInitialPages);
+        usersPage = data.number || page;
+        lastUsers = users;
+        renderUsersTable(users);
+        renderUsersPagination();
       });
     }
 
-    function renderPagination() {
+    function filterUsersTable() {
+      const table = document.getElementById('registered-users-table');
+      const filters = {
+        id: table.tHead.rows[0].cells[0].querySelector('input').value.trim(),
+        username: table.tHead.rows[0].cells[1].querySelector('input').value.trim(),
+        email: table.tHead.rows[0].cells[2].querySelector('input').value.trim(),
+        createdAt: table.tHead.rows[0].cells[3].querySelector('input').value.trim(),
+        active: table.tHead.rows[0].cells[4].querySelector('select').value
+      };
+      loadUsers(0, filters); // Reset to the first page when applying filters
+    }
+
+    function renderUsersPagination() {
       const container = document.getElementById('pagination');
       if (!container) return;
       container.innerHTML = '';
-      for (let i = 0; i < totalPages; i++) {
+      for (let i = 0; i < usersTotalPages; i++) {
         const btn = document.createElement('button');
         btn.textContent = i + 1;
-        btn.disabled = i === currentPage;
+        btn.disabled = i === usersPage;
         btn.onclick = () => loadUsers(i);
         container.appendChild(btn);
       }
@@ -380,29 +406,6 @@
           alert('Failed to delete user.');
         }
       });
-    }
-
-    function filterUsersTable() {
-      const table = document.getElementById('registered-users-table');
-      const filters = [
-        table.tHead.rows[0].cells[0].querySelector('input').value.trim().toLowerCase(),
-        table.tHead.rows[0].cells[1].querySelector('input').value.trim().toLowerCase(),
-        table.tHead.rows[0].cells[2].querySelector('input').value.trim().toLowerCase(),
-        table.tHead.rows[0].cells[3].querySelector('input').value.trim().toLowerCase(),
-        table.tHead.rows[0].cells[4].querySelector('select').value
-      ];
-
-      const filtered = allUsers.filter(user => {
-        return (
-          (filters[0] === '' || String(user.id).toLowerCase().includes(filters[0])) &&
-          (filters[1] === '' || (user.username || '').toLowerCase().includes(filters[1])) &&
-          (filters[2] === '' || (user.email || '').toLowerCase().includes(filters[2])) &&
-          (filters[3] === '' || (user.createdAt ? new Date(user.createdAt).toLocaleString().toLowerCase().includes(filters[3]) : false)) &&
-          (filters[4] === '' || (user.active ? 'Yes' : 'No') === filters[4])
-        );
-      });
-
-      renderUsersTable(filtered);
     }
 
     function toggleUserActive(userId, isActive) {
