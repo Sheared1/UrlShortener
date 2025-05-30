@@ -110,6 +110,9 @@
       //Load URLs created bar chart
       loadUrlsCreatedBarChart();
 
+      //Load shortened URLs
+      loadShortenedUrls();
+
     });
 
 
@@ -140,6 +143,61 @@
           table.style.display = 'table';
         }
       });
+    }
+
+    let shortenedUrlsPage = 0;
+    let shortenedUrlsTotalPages = 1;
+    let shortenedUrlsPageSize = 10;
+
+    function loadShortenedUrls(page = 0) {
+      fetch(`/api/analytics/urls/all?page=${page}&size=${shortenedUrlsPageSize}`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      })
+      .then(res => res.json())
+      .then(data => {
+        // If your backend returns a list directly, wrap it in an object for consistency
+        const urls = Array.isArray(data.content) ? data.content : (Array.isArray(data) ? data : []);
+        shortenedUrlsTotalPages = data.totalPages || 1;
+        shortenedUrlsPage = data.number || page;
+        renderShortenedUrlsTable(urls);
+        renderShortenedUrlsPagination();
+      });
+    }
+
+    function renderShortenedUrlsTable(urls) {
+      const table = document.getElementById('shortened-urls-table');
+      const tbody = table.querySelector('tbody');
+      tbody.innerHTML = '';
+      if (urls.length > 0) {
+        urls.forEach(url => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${url.shortCode || url.shortUrl}</td>
+            <td>${url.originalUrl}</td>
+            <td>${url.createdBy || ''}</td>
+            <td>${url.createdAt ? new Date(url.createdAt).toLocaleString() : ''}</td>
+            <td>${url.clickCount || 0}</td>
+          `;
+          tbody.appendChild(row);
+        });
+        table.style.display = 'table';
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5">No shortened URLs found.</td></tr>';
+        table.style.display = 'table';
+      }
+    }
+
+    function renderShortenedUrlsPagination() {
+      const container = document.getElementById('shortened-urls-pagination');
+      if (!container) return;
+      container.innerHTML = '';
+      for (let i = 0; i < shortenedUrlsTotalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i + 1;
+        btn.disabled = i === shortenedUrlsPage;
+        btn.onclick = () => loadShortenedUrls(i);
+        container.appendChild(btn);
+      }
     }
 
     function loadUrlsCreatedBarChart() {
@@ -499,6 +557,24 @@
 
   <h2>Shortened URLs Created (Past 7 Days)</h2>
   <canvas id="urls-created-bar" width="600" height="300"></canvas>
+
+
+
+  <h2>All Shortened URLs</h2>
+  <table id="shortened-urls-table" class="centered-table" style="margin-top:20px; display:none;">
+    <thead>
+    <tr>
+      <th>Short Code</th>
+      <th>Original URL</th>
+      <th>Created By</th>
+      <th>Created At</th>
+      <th>Click Count</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <div id="shortened-urls-pagination" style="text-align:center; margin: 20px 0;"></div>
+
 
 
 
