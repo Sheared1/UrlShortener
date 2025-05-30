@@ -9,6 +9,9 @@ import com.urlshortener.demo.UrlClick.UrlClickService;
 import com.urlshortener.demo.User.User;
 import com.urlshortener.demo.User.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,6 +46,24 @@ public class AnalyticsController {
         this.urlClickRepository = urlClickRepository;
         this.shortenedUrlRepository = shortenedUrlRepository;
         this.userRepository = userRepository;
+    }
+
+    @GetMapping("/urls/all")
+    public ResponseEntity<?> getAllShortenedUrlsByCreationDate(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ShortenedUrl> shortenedUrlsPage = shortenedUrlRepository.findAllByOrderByCreatedAtDesc(pageable);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", shortenedUrlsPage.getContent());
+        response.put("totalPages", shortenedUrlsPage.getTotalPages());
+        response.put("number", shortenedUrlsPage.getNumber());
+        response.put("totalElements", shortenedUrlsPage.getTotalElements());
+        response.put("size", shortenedUrlsPage.getSize());
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/urls/clicked-past-week")
