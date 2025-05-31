@@ -22,6 +22,16 @@ public class ShortenedUrlRequest {
 
     private boolean active;
 
+    private String captchaToken;
+
+    public String getCaptchaToken() {
+        return captchaToken;
+    }
+
+    public void setCaptchaToken(String captchaToken) {
+        this.captchaToken = captchaToken;
+    }
+
     public String getOriginalUrl() {
         return originalUrl;
     }

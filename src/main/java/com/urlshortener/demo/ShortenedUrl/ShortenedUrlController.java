@@ -1,5 +1,6 @@
 package com.urlshortener.demo.ShortenedUrl;
 
+import com.urlshortener.demo.Captcha.CaptchaService;
 import com.urlshortener.demo.Jwt.JwtService;
 import com.urlshortener.demo.Redis.RedisRateLimitService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,11 +27,14 @@ public class ShortenedUrlController {
     private final RedisRateLimitService redisRateLimitService;
     @Autowired
     private final JwtService jwtService;
+    @Autowired
+    private final CaptchaService captchaService;
 
-    public ShortenedUrlController(ShortenedUrlService shortenedUrlService, RedisRateLimitService redisRateLimitService, JwtService jwtService) {
+    public ShortenedUrlController(ShortenedUrlService shortenedUrlService, RedisRateLimitService redisRateLimitService, JwtService jwtService, CaptchaService captchaService) {
         this.shortenedUrlService = shortenedUrlService;
         this.redisRateLimitService = redisRateLimitService;
         this.jwtService = jwtService;
+        this.captchaService = captchaService;
     }
 
     @Value("${app.url}")
@@ -98,6 +102,10 @@ public class ShortenedUrlController {
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
         if (!redisRateLimitService.allowRequest(clientIp, "GENERATE")){ //Rate limiting implementation, pass in endpoint name.
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of("message", "Rate limit exceeded. Try again later."));
+        }
+        //Captcha validation
+        if (!captchaService.validateCaptcha(request.getCaptchaToken())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Invalid captcha"));
         }
         if (!shortenedUrlService.isValidUrl(request.getOriginalUrl())){
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Invalid URL."));
