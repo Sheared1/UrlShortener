@@ -105,7 +105,7 @@ async function getUserRoles() {
     const token = localStorage.getItem('jwtToken');
     if (!token) return [];
     try {
-        const response = await fetch('/api/users/get-user-roles', {
+        const response = await fetch('https://sheared1.github.io/api/users/get-user-roles', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) return [];
@@ -173,7 +173,7 @@ async function checkEmailVerificationStatus() {
     if (!token) return;
 
     try {
-        const response = await fetch('/api/users/email-verification-status', {
+        const response = await fetch('https://sheared1.github.io/api/users/email-verification-status', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -203,7 +203,7 @@ async function resendVerificationEmail() {
     if (!token) return;
 
     try {
-        const response = await fetch('/api/email/resend-verification-email', {
+        const response = await fetch('https://sheared1.github.io/api/email/resend-verification-email', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
