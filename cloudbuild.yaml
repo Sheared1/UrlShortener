@@ -1,0 +1,8 @@
+steps:
+  - name: 'maven:3.8.6-openjdk-17'
+    entrypoint: 'mvn'
+    args: ['clean', 'package', '-DskipTests']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/my-gcp-project/urlshortener-app', '.']
+images:
+  - 'gcr.io/$PROJECT_ID/urlshortener-app'
