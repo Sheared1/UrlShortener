@@ -239,7 +239,7 @@
         // Logging to debug the request
         console.log('Making request for username:', username);
 
-        const response = await fetch(`https://sheared1.github.io/api/urls/user/${username}`, {
+        const response = await fetch(`https://sheared1.github.io/UrlShortener/api/urls/user/${username}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
