@@ -7,5 +7,20 @@ steps:
     args: ['-c', 'ls -l target']
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/url-shortener/urlshortener-app', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/url-shortener/urlshortener-app']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'urlshortener-app'
+      - '--image'
+      - 'gcr.io/url-shortener/urlshortener-app'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
 images:
   - 'gcr.io/url-shortener/urlshortener-app'
