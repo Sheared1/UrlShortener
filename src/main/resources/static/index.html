@@ -132,6 +132,8 @@
                 <button type="button" class="reset-btn" onclick="resetExpirationDate()">Reset</button>
             </div>
         </div>
+        <div class="g-recaptcha" data-sitekey="6LcyzFArAAAAAGqfmuDpFZexCAlFSd1gH3cTR0ND"></div>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
         <button onclick="shortenUrl()">Shorten URL</button>
     </div>
     <div id="result">
@@ -172,54 +174,46 @@
         const customLink = document.getElementById('customLink').value;
         const expirationDate = document.getElementById('expirationDate').value;
         const errorElement = document.getElementById('errorMessage');
-        const resultElement = document.getElementById('result');
-        const qrCodeImageElement = document.getElementById('qrCodeImage');
-        const shortenedUrlElement = document.getElementById('shortenedUrl');
-
         errorElement.textContent = '';
-        resultElement.style.display = 'none';
-        qrCodeImageElement.style.display = 'none'; // Hide QR code initially
-        qrCodeImageElement.src = ''; // Clear previous QR code
-        shortenedUrlElement.textContent = ''; // Clear previous URL text
-        shortenedUrlElement.href = '#'; // Reset href
 
-        try {
-            const response = await fetch('/api/urls/generate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-                },
-                body: JSON.stringify({
-                    originalUrl: originalUrl,
-                    customLink: customLink || null,
-                    expirationDate: expirationDate || null
-                })
-            });
-
-            //Handle other errors by parsing the response JSON
-            const data = await response.json();
-
-            if (!response.ok) {
-                errorElement.textContent = data.message || 'Error: Failed to shorten URL.';
-                return;
-            }
-
-            const shortUrl = `${window.location.origin}/r/${data.shortCode}`;
-
-            resultElement.style.display = 'block';
-            document.getElementById('shortenedUrl').textContent = shortUrl;
-            document.getElementById('shortenedUrl').href = shortUrl;
-
-            // Set the QR code image source and display it
-            if (data.shortCode) {
-                qrCodeImageElement.src = `/api/urls/qr/${data.shortCode}`;
-                qrCodeImageElement.style.display = 'block'; // Show the QR code image
-            }
-
-        } catch (error) {
-            errorElement.textContent = 'Error: Failed to shorten URL';
+        // Get captcha token
+        const captchaToken = grecaptcha.getResponse();
+        if (!captchaToken) {
+            errorElement.textContent = 'Please complete the captcha.';
+            return;
         }
+
+        // Prepare request
+        const response = await fetch('/api/urls/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('jwtToken') || ''}`
+            },
+            body: JSON.stringify({
+                originalUrl: originalUrl,
+                customLink: customLink || null,
+                expirationDate: expirationDate || null,
+                captchaToken: captchaToken
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            errorElement.textContent = data.message || 'An error occurred.';
+            grecaptcha.reset();
+            return;
+        }
+
+        // Success: show result
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('shortenedUrl').textContent = data.shortCode
+            ? `${window.location.origin}/${data.shortCode}`
+            : '';
+        document.getElementById('shortenedUrl').href = data.shortCode
+            ? `${window.location.origin}/${data.shortCode}`
+            : '';
+        grecaptcha.reset();
     }
 </script>
 </body>
