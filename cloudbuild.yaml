@@ -2,6 +2,9 @@ steps:
   - name: 'maven:3.8.6-openjdk-17'
     entrypoint: 'mvn'
     args: ['clean', 'package', '-DskipTests']
+  - name: 'ubuntu'
+    entrypoint: 'bash'
+    args: ['-c', 'ls -l target']
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/url-shortener/urlshortener-app', '.']
 images:
