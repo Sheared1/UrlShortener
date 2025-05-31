@@ -3,6 +3,6 @@ steps:
     entrypoint: 'mvn'
     args: ['clean', 'package', '-DskipTests']
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/my-gcp-project/urlshortener-app', '.']
+    args: ['build', '-t', 'gcr.io/url-shortener/urlshortener-app', '.']
 images:
-  - 'gcr.io/$PROJECT_ID/urlshortener-app'
+  - 'gcr.io/url-shortener/urlshortener-app'
