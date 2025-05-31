@@ -9,7 +9,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("https://sheared1.github.io/UrlShortener")
+                .allowedOrigins("https://sheared.io")
                 .allowedMethods("GET", "POST", "PUT", "DELETE");
     }
 }
