@@ -1,14 +1,14 @@
 steps:
-  - name: 'maven:3.8.6-openjdk-17'
+  - name: 'maven:3.8.6-eclipse-temurin-17'
     entrypoint: 'mvn'
     args: ['clean', 'package', '-DskipTests']
   - name: 'ubuntu'
     entrypoint: 'bash'
     args: ['-c', 'ls -l target']
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/url-shortener/urlshortener-app', '.']
+    args: ['build', '-t', 'gcr.io/urlshortener/urlshortener-app', '.']
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/url-shortener/urlshortener-app']
+    args: ['push', 'gcr.io/urlshortener/urlshortener-app']
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
@@ -16,7 +16,7 @@ steps:
       - 'deploy'
       - 'urlshortener-app'
       - '--image'
-      - 'gcr.io/url-shortener/urlshortener-app'
+      - 'gcr.io/urlshortener/urlshortener-app'
       - '--region'
       - 'us-central1'
       - '--platform'
