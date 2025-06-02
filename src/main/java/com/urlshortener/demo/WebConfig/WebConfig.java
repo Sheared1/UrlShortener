@@ -10,6 +10,9 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
                 .allowedOrigins("https://sheared.io")
-                .allowedMethods("GET", "POST", "PUT", "DELETE");
+                .allowedOrigins("https://app-v1-1063002474622.europe-west1.run.app")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("*")
+                .allowCredentials(true);
     }
 }

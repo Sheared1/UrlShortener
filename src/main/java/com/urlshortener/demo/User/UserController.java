@@ -301,11 +301,12 @@ public class UserController {
     public ResponseEntity<?> registerUser(@RequestBody UserRegistrationRequest user, HttpServletRequest httpRequest){
 
         logger.info("Received registration request for username: {}", user.getUsername());
-
+/*
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
         if (!redisRateLimitService.allowRequest(clientIp, "REGISTER")){ //Rate limiting implementation, pass in endpoint name.
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of("message", "Error: Rate limit exceeded. Try again later."));
         }
+ */
         if (userService.findByUsername(user.getUsername()) != null){
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Username already exists."));
         }
