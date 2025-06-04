@@ -34,7 +34,6 @@ build/
 
 ### DB details ###
 **/src/main/resources/env.properties
-**/src/main/resources/application.properties
 
 ### Docker details ###
 */.env
