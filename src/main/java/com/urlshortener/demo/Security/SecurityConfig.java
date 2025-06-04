@@ -70,7 +70,12 @@ public class SecurityConfig {
 
                                 .requestMatchers("/admin.html").permitAll()     //Check is done in frontend
 
-
+                                //For Swagger UI and API docs, allow all for development purposes:
+                                .requestMatchers(
+                                        "/swagger-ui.html",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**"
+                                ).permitAll()
 
 
 
