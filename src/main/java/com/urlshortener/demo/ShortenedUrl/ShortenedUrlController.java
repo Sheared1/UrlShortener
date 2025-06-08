@@ -4,7 +4,6 @@ import com.urlshortener.demo.Captcha.CaptchaService;
 import com.urlshortener.demo.Jwt.JwtService;
 import com.urlshortener.demo.Redis.RedisRateLimitService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.coyote.Response;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -95,12 +94,12 @@ public class ShortenedUrlController {
         return shortenedUrlService.getShortenedUrlById(id);
     }
 
-    @PostMapping("/generate")
-    public ResponseEntity<?> createShortenedUrl(@NotNull @RequestBody ShortenedUrlRequest request, HttpServletRequest httpRequest, @RequestHeader(value = "Authorization", required = false) String authHeader){
+    @PostMapping("/shorten")
+    public ResponseEntity<?> shortenUrl(@NotNull @RequestBody ShortenedUrlRequest request, HttpServletRequest httpRequest, @RequestHeader(value = "Authorization", required = false) String authHeader){
 
         //Rate limiter implementation
         String clientIp = shortenedUrlService.getClientIp(httpRequest);
-        if (!redisRateLimitService.allowRequest(clientIp, "GENERATE")){ //Rate limiting implementation, pass in endpoint name.
+        if (!redisRateLimitService.allowRequest(clientIp, "SHORTEN")){ //Rate limiting implementation, pass in endpoint name.
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of("message", "Rate limit exceeded. Try again later."));
         }
         //Captcha validation
@@ -118,7 +117,7 @@ public class ShortenedUrlController {
             return ResponseEntity.badRequest().body(Map.of("message", "Error: Custom code invalid or already exists (code must exist, and be 1-8 alphanumeric characters)."));
         }
 
-        ShortenedUrl shortenedUrl = shortenedUrlService.createShortenedUrl(request.getOriginalUrl(), request.getCustomLink(), request.getExpirationDate(), authHeader); //If custom link is null, one will be generated.
+        ShortenedUrl shortenedUrl = shortenedUrlService.shortenUrl(request.getOriginalUrl(), request.getCustomLink(), request.getExpirationDate(), authHeader); //If custom link is null, one will be generated.
         return ResponseEntity.status(HttpStatus.CREATED).body(shortenedUrl);
 
     }

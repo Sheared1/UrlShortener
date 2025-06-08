@@ -100,7 +100,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 path.endsWith(".css") ||
                 path.equals("/api/users/forgot-password") ||
                 path.startsWith("/api/password/reset-password") ||
-                path.equals("/api/urls/generate") ||
+                path.equals("/api/urls/shorten") ||
                 path.startsWith("/api/urls/redirect/") ||
                 path.equals("/api/users/register") ||
                 path.equals("/api/auth/login") ||

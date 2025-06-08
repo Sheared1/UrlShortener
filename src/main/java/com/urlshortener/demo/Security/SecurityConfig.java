@@ -79,7 +79,7 @@ public class SecurityConfig {
 
 
 
-                                .requestMatchers("/api/urls/generate").permitAll()
+                                .requestMatchers("/api/urls/shorten").permitAll()
                                 .requestMatchers("/api/urls/redirect/**").permitAll()
                                 .requestMatchers("/api/users/register").permitAll()
                                 .requestMatchers("/api/auth/login").permitAll()

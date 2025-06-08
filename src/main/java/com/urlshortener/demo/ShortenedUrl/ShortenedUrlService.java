@@ -99,7 +99,7 @@ public class ShortenedUrlService {
     @Transactional
     //We are using @CachePut since this is a WRITE operation. Will not check cache before executing.
     @CachePut(value = "urlCache", key = "#result.shortCode") //We are caching the shortCode from the RESULT object (ShortenedUrl), which will be the custom link if used.
-    public ShortenedUrl createShortenedUrl(String originalUrl, String customLink, LocalDateTime expirationDate, String authHeader) {
+    public ShortenedUrl shortenUrl(String originalUrl, String customLink, LocalDateTime expirationDate, String authHeader) {
 
         logger.info("Creating shortened URL for original URL: {}", originalUrl);
 
